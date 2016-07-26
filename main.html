@@ -2,12 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Students Marks</title>
+    <title>Learning words</title>
     <link rel="stylesheet" href="main.css"/>
     <script src="jquery-3.1.0.js"></script>
     <script src="main-compiled.js"></script>
 </head>
 <body>
-
+<form>
+    <label for="translationLanguage">Select default language for translation</label><br>
+    <select id="translationLanguage">
+        <option value="en">English</option>
+        <option value="ru" selected="selected">Russian</option>
+    </select><br>
+    <label for="word">type word</label><br>
+    <input type="text" id="word">
+</form>
+<button type="button" onclick="Controller.getTranslation()">get yandex translation</button>
+<button type="button" onclick="Controller.getMeaning()">get google definition (only in english)</button>
+<div id="translationBox"></div>
+<div id="dictionaryBox"></div>
 </body>
 </html>

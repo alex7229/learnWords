@@ -83,3 +83,96 @@ $.ajax({
 //todo - get to work google.api for dictionary (via suspicious site) and yandex.api for translations
 
 
+class Controller {
+
+    static getTranslation () {
+        let word = $('#word').val();
+        let language = $('#translationLanguage').val();
+        if ((!word) || (!language)) return;
+        $.ajax({
+            url: '/getTranslation',
+            type: 'POST',
+            data: {
+                word,
+                language
+            }
+        })
+            .then(data => {
+                Draw.yandexData(data)
+            })
+    }
+
+    static getMeaning () {
+        let word = $('#word').val();
+        $.ajax({
+            url: '/getMeaning',
+            type: 'POST',
+            data: {
+                word
+            }
+        }).done(data => {
+            console.log(data)
+        });
+    }
+
+    getWords () {
+
+    }
+
+}
+
+class Draw {
+    static yandexData(data) {
+        let response = JSON.parse(data);
+        if (response.def.length === 0) return;
+        let differentTypes = response.def; //adjective, noun else
+        let pageHTML = ``;
+        differentTypes.map(description => {
+            let [type, transcription] = [description.pos || ``, description.ts ? `[${description.ts}]` : ``];
+            pageHTML += `<br><span class="ital">${type}</span> ${transcription} `;
+            let translations = description.tr;
+            translations.map((translation, index) => {
+                let examples = translation.ex;
+                let synonyms = translation.syn;
+                let meanings = translation.mean;
+                let typeTranslated = translation.pos;
+                let translatedText = translation.text;
+                pageHTML+=`<br>${index+1}) ${translatedText}`;
+                if (examples) {
+                    pageHTML += '. <br><span class="tabbed">Examples:</span> ' +
+                        examples.map(example => {
+                        let exampleText = example.text;
+                        let translationOfExample = example.tr[0].text;
+                        return `${exampleText} - ${translationOfExample}; `;
+                    }).join('').slice(0,-2)
+                }
+                if (synonyms) {
+                    pageHTML += `. <br><span class="tabbed">Synonyms:</span> `+
+                        synonyms.map(synonym => {
+                            return `${synonym.text}; `
+                    }).join('').slice(0,-2)
+                }
+                if (meanings) {
+                    pageHTML += `. <br><span class = "tabbed">Synonyms (en):</span> `+
+                        meanings.map(meaning => {
+                            return `${meaning.text}; `
+                        }).join('').slice(0,-2)
+                }
+
+            })
+        });
+        $('#translationBox').html(pageHTML)
+    }
+}
+
+
+
+
+
+
+
+
+$(document).ready(() => {
+    $('#word').val('cat');
+    Controller.getTranslation();
+});
