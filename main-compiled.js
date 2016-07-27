@@ -85,7 +85,7 @@ $.ajax({
 });
 */
 
-//todo - get to work google.api for dictionary (via suspicious site) and yandex.api for translations
+//todo - get to work google.api for dictionary (via suspicious site) - (get web translation, add noun/verb type), add sound (when u guessed right answer) from fallout4
 
 
 var Controller = function () {
@@ -100,7 +100,7 @@ var Controller = function () {
         key: 'getTranslation',
         value: function getTranslation() {
             var word = $('#word').val();
-            var language = $('#translationLanguage').val();
+            var language = 'ru';
             if (!word || !language) return;
             $.ajax({
                 url: '/getTranslation',
@@ -124,7 +124,7 @@ var Controller = function () {
                     word: word
                 }
             }).done(function (data) {
-                console.log(data);
+                Draw.googleData(data);
             });
         }
     }]);
@@ -176,7 +176,40 @@ var Draw = function () {
                     }
                 });
             });
+            pageHTML += '<hr>';
             $('#translationBox').html(pageHTML);
+        }
+    }, {
+        key: 'googleData',
+        value: function googleData(data) {
+            var pageHTML = '';
+            var regExp = /<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
+            var regExpResult = void 0;
+            var definitionsChunks = [];
+            while ((regExpResult = regExp.exec(data)) !== null) {
+                definitionsChunks.push(regExpResult[1]);
+            }
+            definitionsChunks.map(function (chunk) {
+                var orderedList = chunk.split(/<li style="list-style:decimal">/g);
+                orderedList.shift();
+                pageHTML += '<ol>\n                ' + orderedList.map(function (definition) {
+                    return '<li>' + definition.slice(0, -10) + '</li>';
+                }).join('') + '</ol><hr>';
+            });
+
+            var regExpWeb = /Web Definitions[\s\S]*<\/ol>/g;
+            var webResultChunk = data.match(regExpWeb)[0];
+            var webList = [];
+            var regExpWebList = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
+            var regExpWebListResult = void 0;
+            while ((regExpWebListResult = regExpWebList.exec(webResultChunk)) !== null) {
+                webList.push(regExpWebListResult[1]);
+            }
+            pageHTML += '<b>Web Results:</b><ol>\n            ' + webList.map(function (part) {
+                return '<li>' + part + '</li>';
+            }).join('') + '</ol>';
+
+            $('#dictionaryBox').html(pageHTML);
         }
     }]);
 
@@ -184,8 +217,8 @@ var Draw = function () {
 }();
 
 $(document).ready(function () {
-    $('#word').val('cat');
-    Controller.getTranslation();
+    $('#word').val('match');
+    //Controller.getTranslation();
 });
 
 //# sourceMappingURL=main-compiled.js.map

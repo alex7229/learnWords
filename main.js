@@ -80,14 +80,14 @@ $.ajax({
 */
 
 
-//todo - get to work google.api for dictionary (via suspicious site) and yandex.api for translations
+//todo - get to work google.api for dictionary (via suspicious site) - (get web translation, add noun/verb type), add sound (when u guessed right answer) from fallout4
 
 
 class Controller {
 
     static getTranslation () {
         let word = $('#word').val();
-        let language = $('#translationLanguage').val();
+        let language = 'ru';
         if ((!word) || (!language)) return;
         $.ajax({
             url: '/getTranslation',
@@ -111,7 +111,7 @@ class Controller {
                 word
             }
         }).done(data => {
-            console.log(data)
+            Draw.googleData(data)
         });
     }
 
@@ -161,7 +161,43 @@ class Draw {
 
             })
         });
+        pageHTML += '<hr>';
         $('#translationBox').html(pageHTML)
+    }
+
+    static googleData (data) {
+        let pageHTML = ``;
+        let regExp = /<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
+        let regExpResult;
+        let definitionsChunks = [];
+        while ((regExpResult = regExp.exec(data)) !== null) {
+            definitionsChunks.push(regExpResult[1])
+        }
+        definitionsChunks.map(chunk => {
+            let orderedList = chunk.split(/<li style="list-style:decimal">/g);
+            orderedList.shift();
+            pageHTML += `<ol>
+                ${orderedList.map(definition => {
+                    return `<li>${definition.slice(0,-10)}</li>`
+                }).join('')}</ol><hr>`
+        });
+
+
+        let regExpWeb = /Web Definitions[\s\S]*<\/ol>/g;
+        let webResultChunk = data.match(regExpWeb)[0];
+        let webList = [];
+        let regExpWebList = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
+        let regExpWebListResult;
+        while ((regExpWebListResult = regExpWebList.exec(webResultChunk)) !== null) {
+            webList.push(regExpWebListResult[1])
+        }
+        pageHTML += `<b>Web Results:</b><ol>
+            ${webList.map(part => {
+                return `<li>${part}</li>`
+            }).join('')}</ol>`;
+
+
+        $('#dictionaryBox').html(pageHTML)
     }
 }
 
@@ -173,6 +209,7 @@ class Draw {
 
 
 $(document).ready(() => {
-    $('#word').val('cat');
-    Controller.getTranslation();
+    $('#word').val('match');
+    //Controller.getTranslation();
 });
+
