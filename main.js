@@ -107,13 +107,13 @@
 
 
 
-//todo - get to work google.api for dictionary (via suspicious site) - (get web translation, add noun/verb type), add sound (when u guessed right answer) from fallout4
+//todo -  add sound (when u guessed right answer) from fallout4, add authentication (to save user progress)
 
 
  class Controller {
 
     static getTranslation() {
-        let word = $('#word').val();
+        const word = $('#word').val();
         if ((!word)) return;
         AjaxRequests.getWordFromServer(word)
             .then(data => {
@@ -129,7 +129,8 @@
     }
 
     static getMeaning() {
-        let word = $('#word').val();
+        const word = $('#word').val();
+        if ((!word)) return;
         AjaxRequests.googleApi(word)
             .then(data => {
                 Draw.google(GoogleParse.getData(data))
@@ -171,7 +172,6 @@
                  resolve(data)
              });
          });
-
      }
 
      static getWordFromServer (word) {
@@ -187,13 +187,25 @@
          })
      }
 
+     static getWordList () {
+         return new Promise ((resolve, reject) => {
+             $.ajax({
+                 url: `http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt`,
+                 type: 'GET'
+             }).done(data => {
+                 resolve(data)
+             }).catch(err => {
+                 reject (err)
+             })
+         })
+     }
 
  }
 
  class YandexParse {
 
     static getData (rawData) {
-        let data = JSON.parse(rawData);
+        const data = JSON.parse(rawData);
         if (data.def.length === 0) return;
         return data.def.map(description => {
             return {
@@ -229,7 +241,7 @@
     static findCorrectAnswers (parsedWords) {
         return parsedWords.map(word => {
             return word.translations.map(translation => {
-                return translation.translation
+                return translation.translation.toLowerCase()
             })
         }).reduce((previousWords, currentWord) => {
             return previousWords.concat(currentWord)
@@ -265,11 +277,23 @@
 
      static findDefinitionLists(chunks) {
          return chunks.map(chunk => {
+             const list = chunk.body.split(/<li style="list-style:decimal">/g).slice(1).map(listValue => {
+                return GoogleParse.deleteUnnecessaryRow(listValue)
+             });
              return {
                  typeOfWord: chunk.typeOfWord,
-                 list: chunk.body.split(/<li style="list-style:decimal">/g).slice(1)
+                 list
              }
          })
+     }
+
+     static deleteUnnecessaryRow(listValue) {
+         const regExp = /color:#767676/;
+         if (listValue.match(regExp)) {
+             return listValue
+         } else {
+             return listValue.replace(/<div[\s\S]*<\/div>/, '')
+         }
      }
 
 
@@ -298,7 +322,7 @@
  class Draw {
 
      static yandex (words) {
-         let divHTML = words.map(word => {
+         const divHTML = words.map(word => {
              return `<br><span class="ital"><b>${word.type}</b></span> ${word.transcription} ` +
                  word.translations.map((translation, index) => {
                      let innerHTML =`<br>${index+1}) ${translation.translation}`;
@@ -332,9 +356,6 @@
             ${data.webDefinitionLists.map(row => {
                 return `<li>${row}</li>`
             }).join('')}</ol>`;
-         console.log(grammar);
-         console.log(definitions);
-         console.log(webDefinition);
          $('#dictionaryBox').html(grammar+definitions+webDefinition)
      }
 
@@ -344,17 +365,47 @@
  class LearnMachine {
 
      constructor () {
-         this.correctAnswers = []
+         this.correctAnswers = [];
+         this.allWords = []
      }
 
-     setCorrectAnswers (words) {
-        this.correctAnswers = words
+     getAllWords () {
+        AjaxRequests.getWordList()
+            .then(data => {
+                this.allWords = JSON.parse(data)
+            }, err => {
+                throw err
+            })
      }
 
-     checkAnswer (word) {
-         if (this.correctAnswers.includes(word)) {
-             return true
+     checkAnswer () {
+         const userAnswer = $('#answerWord').val();
+         if (this.correctAnswers.includes(userAnswer)) {
+             console.log('answer is correct')
+         } else {
+             console.log('answer is incorrect')
          }
+     }
+
+     sendQuestion () {
+         const wordNumber = Math.ceil(Math.random()*1000);
+         const word = this.allWords[wordNumber].word;
+         $('#questionedWord').text(word);
+         this.getAnswer(word)
+     }
+
+     getAnswer (word) {
+         AjaxRequests.getWordFromServer(word)
+             .then(data => {
+                 this.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data))
+             }, err => {
+                 if (err.status === 404) {
+                     AjaxRequests.yandexApi(word)
+                         .then(data => {
+                             this.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data))
+                         })
+                 }
+             })
      }
 
  }
@@ -362,16 +413,16 @@
 
 
 
-
-
-
-$(document).ready(() => {
-
-});
-
  /*AjaxRequests.googleApi('cat')
      .then(data => {
          Draw.google(GoogleParse.getData(data))
      });*/
- let learningMachine = new LearnMachine();
 
+ let learningMachine = new LearnMachine();
+ learningMachine.getAllWords();
+
+ $(document).ready(() => {
+     setTimeout(() => {
+         learningMachine.sendQuestion()
+     }, 2500)
+ });

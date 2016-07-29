@@ -9,11 +9,18 @@
 </head>
 <body>
 <form>
-    <label for="word">type word</label><br>
+    <label for="word">type word for search</label><br>
     <input type="text" id="word">
 </form>
 <button type="button" onclick="Controller.getTranslation()">get yandex translation</button>
-<button type="button" onclick="Controller.getMeaning()">get google definition (only in english)</button>
+<button type="button" onclick="Controller.getMeaning()">get google definition (only in english)</button><br>
+<p id="question">What does word '<b><span id="questionedWord"></span></b>' mean?</p>
+<form>
+    <label for="answerWord">Type your answer</label><br>
+    <input type="text" id="answerWord">
+</form>
+<button type="button" onclick="learningMachine.checkAnswer()">Send answer (or click enter)</button>
+<button type="button" onclick="learningMachine.sendQuestion()">Get another question</button>
 <div id="translationBox"></div>
 <div id="dictionaryBox"></div>
 </body>

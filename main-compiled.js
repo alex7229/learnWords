@@ -109,7 +109,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 });*/
 
-//todo - get to work google.api for dictionary (via suspicious site) - (get web translation, add noun/verb type), add sound (when u guessed right answer) from fallout4
+//todo -  add sound (when u guessed right answer) from fallout4, add authentication (to save user progress)
 
 
 var Controller = function () {
@@ -139,6 +139,7 @@ var Controller = function () {
         key: 'getMeaning',
         value: function getMeaning() {
             var word = $('#word').val();
+            if (!word) return;
             AjaxRequests.googleApi(word).then(function (data) {
                 Draw.google(GoogleParse.getData(data));
             });
@@ -189,6 +190,20 @@ var AjaxRequests = function () {
             return new Promise(function (resolve, reject) {
                 $.ajax({
                     url: 'http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/' + word + '.txt',
+                    type: 'GET'
+                }).done(function (data) {
+                    resolve(data);
+                }).catch(function (err) {
+                    reject(err);
+                });
+            });
+        }
+    }, {
+        key: 'getWordList',
+        value: function getWordList() {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: 'http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt',
                     type: 'GET'
                 }).done(function (data) {
                     resolve(data);
@@ -252,7 +267,7 @@ var YandexParse = function () {
         value: function findCorrectAnswers(parsedWords) {
             return parsedWords.map(function (word) {
                 return word.translations.map(function (translation) {
-                    return translation.translation;
+                    return translation.translation.toLowerCase();
                 });
             }).reduce(function (previousWords, currentWord) {
                 return previousWords.concat(currentWord);
@@ -295,11 +310,24 @@ var GoogleParse = function () {
         key: 'findDefinitionLists',
         value: function findDefinitionLists(chunks) {
             return chunks.map(function (chunk) {
+                var list = chunk.body.split(/<li style="list-style:decimal">/g).slice(1).map(function (listValue) {
+                    return GoogleParse.deleteUnnecessaryRow(listValue);
+                });
                 return {
                     typeOfWord: chunk.typeOfWord,
-                    list: chunk.body.split(/<li style="list-style:decimal">/g).slice(1)
+                    list: list
                 };
             });
+        }
+    }, {
+        key: 'deleteUnnecessaryRow',
+        value: function deleteUnnecessaryRow(listValue) {
+            var regExp = /color:#767676/;
+            if (listValue.match(regExp)) {
+                return listValue;
+            } else {
+                return listValue.replace(/<div[\s\S]*<\/div>/, '');
+            }
         }
     }, {
         key: 'findWebDefinitionChunk',
@@ -366,9 +394,6 @@ var Draw = function () {
             var webDefinition = '<b>Web Results:</b><ol>\n            ' + data.webDefinitionLists.map(function (row) {
                 return '<li>' + row + '</li>';
             }).join('') + '</ol>';
-            console.log(grammar);
-            console.log(definitions);
-            console.log(webDefinition);
             $('#dictionaryBox').html(grammar + definitions + webDefinition);
         }
     }]);
@@ -381,31 +406,70 @@ var LearnMachine = function () {
         _classCallCheck(this, LearnMachine);
 
         this.correctAnswers = [];
+        this.allWords = [];
     }
 
     _createClass(LearnMachine, [{
-        key: 'setCorrectAnswers',
-        value: function setCorrectAnswers(words) {
-            this.correctAnswers = words;
+        key: 'getAllWords',
+        value: function getAllWords() {
+            var _this = this;
+
+            AjaxRequests.getWordList().then(function (data) {
+                _this.allWords = JSON.parse(data);
+            }, function (err) {
+                throw err;
+            });
         }
     }, {
         key: 'checkAnswer',
-        value: function checkAnswer(word) {
-            if (this.correctAnswers.includes(word)) {
-                return true;
+        value: function checkAnswer() {
+            var userAnswer = $('#answerWord').val();
+            if (this.correctAnswers.includes(userAnswer)) {
+                console.log('answer is correct');
+            } else {
+                console.log('answer is incorrect');
             }
+        }
+    }, {
+        key: 'sendQuestion',
+        value: function sendQuestion() {
+            var wordNumber = Math.ceil(Math.random() * 1000);
+            var word = this.allWords[wordNumber].word;
+            $('#questionedWord').text(word);
+            this.getAnswer(word);
+        }
+    }, {
+        key: 'getAnswer',
+        value: function getAnswer(word) {
+            var _this2 = this;
+
+            AjaxRequests.getWordFromServer(word).then(function (data) {
+                _this2.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
+            }, function (err) {
+                if (err.status === 404) {
+                    AjaxRequests.yandexApi(word).then(function (data) {
+                        _this2.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
+                    });
+                }
+            });
         }
     }]);
 
     return LearnMachine;
 }();
 
-$(document).ready(function () {});
-
 /*AjaxRequests.googleApi('cat')
     .then(data => {
         Draw.google(GoogleParse.getData(data))
     });*/
+
 var learningMachine = new LearnMachine();
+learningMachine.getAllWords();
+
+$(document).ready(function () {
+    setTimeout(function () {
+        learningMachine.sendQuestion();
+    }, 2500);
+});
 
 //# sourceMappingURL=main-compiled.js.map

@@ -7,3 +7,10 @@
 .googleGrammar{
     color: saddlebrown;
 }
+#question {
+    position: relative;
+    margin-top:50px;
+}
+#questionedWord{
+    color: darkred;
+}
