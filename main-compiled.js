@@ -126,13 +126,11 @@ var Controller = function () {
             var word = $('#word').val();
             if (!word) return;
             AjaxRequests.getWordFromServer(word).then(function (data) {
-                var parsedData = Parse.yandex(data);
-                Draw.yandexData(parsedData);
+                Draw.yandex(YandexParse.getData(data));
             }, function (err) {
                 if (err.status === 404) {
                     AjaxRequests.yandexApi(word).then(function (data) {
-                        var parsedData = Parse.yandex(data);
-                        Draw.yandexData(parsedData);
+                        Draw.yandex(YandexParse.getData(data));
                     });
                 }
             });
@@ -142,7 +140,7 @@ var Controller = function () {
         value: function getMeaning() {
             var word = $('#word').val();
             AjaxRequests.googleApi(word).then(function (data) {
-                Draw.googleData(data);
+                Draw.google(GoogleParse.getData(data));
             });
         }
     }]);
@@ -204,30 +202,25 @@ var AjaxRequests = function () {
     return AjaxRequests;
 }();
 
-var Parse = function () {
-    function Parse() {
-        _classCallCheck(this, Parse);
+var YandexParse = function () {
+    function YandexParse() {
+        _classCallCheck(this, YandexParse);
     }
 
-    _createClass(Parse, null, [{
-        key: 'yandex',
-        value: function yandex(rawData) {
+    _createClass(YandexParse, null, [{
+        key: 'getData',
+        value: function getData(rawData) {
             var data = JSON.parse(rawData);
             if (data.def.length === 0) return;
-            var wordFullData = {
-                chunks: data.def, //adjective, noun, etc;
-                correctAnswers: []
-            };
-            wordFullData.chunks = wordFullData.chunks.map(function (description) {
+            return data.def.map(function (description) {
                 return {
                     type: description.pos || '',
                     transcription: description.ts ? '[' + description.ts + ']' : '',
                     translations: description.tr.map(function (translation) {
-                        wordFullData.correctAnswers.push(translation.text);
                         return {
-                            examples: Parse.transformExamples(translation.ex),
-                            synonyms: Parse.transformSynonyms(translation.syn),
-                            synonymsEn: Parse.transformSynonyms(translation.mean),
+                            examples: YandexParse.transformExamples(translation.ex),
+                            synonyms: YandexParse.transformSynonyms(translation.syn),
+                            synonymsEn: YandexParse.transformSynonyms(translation.mean),
                             translationType: translation.pos,
                             translation: translation.text
                         };
@@ -235,7 +228,6 @@ var Parse = function () {
 
                 };
             });
-            return wordFullData;
         }
     }, {
         key: 'transformExamples',
@@ -255,9 +247,86 @@ var Parse = function () {
                 return synonym.text;
             });
         }
+    }, {
+        key: 'findCorrectAnswers',
+        value: function findCorrectAnswers(parsedWords) {
+            return parsedWords.map(function (word) {
+                return word.translations.map(function (translation) {
+                    return translation.translation;
+                });
+            }).reduce(function (previousWords, currentWord) {
+                return previousWords.concat(currentWord);
+            }, []);
+        }
     }]);
 
-    return Parse;
+    return YandexParse;
+}();
+
+var GoogleParse = function () {
+    function GoogleParse() {
+        _classCallCheck(this, GoogleParse);
+    }
+
+    _createClass(GoogleParse, null, [{
+        key: 'getData',
+        value: function getData(rawData) {
+            return {
+                definitionLists: GoogleParse.findDefinitionLists(GoogleParse.findDefinitionChunks(rawData)),
+                webDefinitionLists: GoogleParse.findWebDefinitionLists(GoogleParse.findWebDefinitionChunk(rawData)),
+                grammar: GoogleParse.findGrammar(rawData)
+            };
+        }
+    }, {
+        key: 'findDefinitionChunks',
+        value: function findDefinitionChunks(rawData) {
+            var regExp = /<b>(.*)\n[\s\S]*?<\/[\s\S]*?<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
+            var regExpResult = void 0;
+            var definitionsChunks = [];
+            while ((regExpResult = regExp.exec(rawData)) !== null) {
+                definitionsChunks.push({
+                    typeOfWord: regExpResult[1],
+                    body: regExpResult[2]
+                });
+            }
+            return definitionsChunks;
+        }
+    }, {
+        key: 'findDefinitionLists',
+        value: function findDefinitionLists(chunks) {
+            return chunks.map(function (chunk) {
+                return {
+                    typeOfWord: chunk.typeOfWord,
+                    list: chunk.body.split(/<li style="list-style:decimal">/g).slice(1)
+                };
+            });
+        }
+    }, {
+        key: 'findWebDefinitionChunk',
+        value: function findWebDefinitionChunk(rawData) {
+            var regExp = /Web Definitions[\s\S]*<\/ol>/g;
+            return rawData.match(regExp)[0];
+        }
+    }, {
+        key: 'findWebDefinitionLists',
+        value: function findWebDefinitionLists(chunk) {
+            var webList = [];
+            var regExp = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
+            var regExpResult = void 0;
+            while ((regExpResult = regExp.exec(chunk)) !== null) {
+                webList.push(regExpResult[1]);
+            }
+            return webList;
+        }
+    }, {
+        key: 'findGrammar',
+        value: function findGrammar(rawData) {
+            var regExp = /<span style="color:#767676">([\s\S]*?)<\/span>/;
+            return rawData.match(regExp)[1].slice(0, -2);
+        }
+    }]);
+
+    return GoogleParse;
 }();
 
 var Draw = function () {
@@ -266,107 +335,41 @@ var Draw = function () {
     }
 
     _createClass(Draw, null, [{
-        key: 'yandexData',
-        value: function yandexData(data) {
-            var response = JSON.parse(data);
-            if (response.def.length === 0) return;
-            var differentTypes = response.def; //adjective, noun else
-            var divHTML = '';
-            differentTypes.map(function (description) {
-                var type = description.pos || '';
-                var transcription = description.ts ? '[' + description.ts + ']' : '';
-
-                divHTML += '<br><span class="ital"><b>' + type + '</b></span> ' + transcription + ' ';
-                var translations = description.tr;
-                translations.map(function (translation, index) {
-                    var examples = translation.ex;
-                    var synonyms = translation.syn;
-                    var meanings = translation.mean;
-                    var typeTranslated = translation.pos;
-                    var translatedText = translation.text;
-                    divHTML += '<br>' + (index + 1) + ') ' + translatedText;
-                    if (examples) {
-                        divHTML += '. <br><span class="tabbed">Examples:</span> ' + examples.map(function (example) {
-                            var exampleText = example.text;
-                            var translationOfExample = example.tr[0].text;
-                            return exampleText + ' - ' + translationOfExample + '; ';
-                        }).join('').slice(0, -2);
-                    }
-                    if (synonyms) {
-                        divHTML += '. <br><span class="tabbed">Synonyms:</span> ' + synonyms.map(function (synonym) {
-                            return synonym.text + '; ';
-                        }).join('').slice(0, -2);
-                    }
-                    if (meanings) {
-                        divHTML += '. <br><span class = "tabbed">Synonyms (en):</span> ' + meanings.map(function (meaning) {
-                            return meaning.text + '; ';
-                        }).join('').slice(0, -2);
-                    }
-                });
-            });
-            divHTML += '<hr>';
-            $('#translationBox').html(divHTML);
-        }
-    }, {
-        key: 'yandexNew',
-        value: function yandexNew(data) {
-            var words = data.chunks;
-            var divHTML = '';
-            words.map(function (word) {
-                divHTML += '<br><span class="ital"><b>' + word.type + '</b></span> ' + word.transcription + ' ';
-                word.translations.map(function (translation, index) {
-                    divHTML += '<br>' + (index + 1) + ') ' + translation.translation;
+        key: 'yandex',
+        value: function yandex(words) {
+            var divHTML = words.map(function (word) {
+                return '<br><span class="ital"><b>' + word.type + '</b></span> ' + word.transcription + ' ' + word.translations.map(function (translation, index) {
+                    var innerHTML = '<br>' + (index + 1) + ') ' + translation.translation;
                     if (translation.examples.length !== 0) {
-                        divHTML += '. <br><span class="tabbed">Examples:</span> ' + translation.examples.join('; ');
+                        innerHTML += '. <br><span class="tabbed">Examples:</span> ' + translation.examples.join('; ');
                     }
                     if (translation.synonyms.length !== 0) {
-                        divHTML += '. <br><span class="tabbed">Synonyms:</span> ' + translation.synonyms.join('; ');
+                        innerHTML += '. <br><span class="tabbed">Synonyms:</span> ' + translation.synonyms.join('; ');
                     }
                     if (translation.synonymsEn.length !== 0) {
-                        divHTML += '. <br><span class="tabbed">Synonyms (en):</span> ' + translation.synonymsEn.join('; ');
+                        innerHTML += '. <br><span class="tabbed">Synonyms (en):</span> ' + translation.synonymsEn.join('; ');
                     }
-                });
-            });
-            divHTML += '<hr>';
+                    return innerHTML;
+                }).join('');
+            }) + '<hr>';
             $('#translationBox').html(divHTML);
         }
     }, {
-        key: 'googleData',
-        value: function googleData(data) {
-            var divHTML = '';
-            var regExpChunk = /<b>(.*)\n[\s\S]*?<\/[\s\S]*?<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
-            var regExpResultChunk = void 0;
-            var definitionsChunks = [];
-            while ((regExpResultChunk = regExpChunk.exec(data)) !== null) {
-                definitionsChunks.push({
-                    typeOfWord: regExpResultChunk[1],
-                    body: regExpResultChunk[2]
-                });
-            }
-            definitionsChunks.map(function (chunk) {
-                var orderedList = chunk.body.split(/<li style="list-style:decimal">/g);
-                orderedList.shift();
-                divHTML += '<b>' + chunk.typeOfWord + '</b><br><ol>\n                ' + orderedList.map(function (definition) {
-                    return '<li>' + definition.slice(0, -10) + '</li>';
+        key: 'google',
+        value: function google(data) {
+            var grammar = '<span class="googleGrammar"><b>Grammar:</b> ' + data.grammar + '</span><br>';
+            var definitions = data.definitionLists.map(function (chunk) {
+                return '<b>' + chunk.typeOfWord + '</b><br><ol>\n                ' + chunk.list.map(function (definition) {
+                    return '<li>' + definition + '</li>';
                 }).join('') + '</ol><hr>';
             });
-
-            var regExpWeb = /Web Definitions[\s\S]*<\/ol>/g;
-            var webResultChunk = data.match(regExpWeb)[0];
-            var webList = [];
-            var regExpWebList = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
-            var regExpWebListResult = void 0;
-            while ((regExpWebListResult = regExpWebList.exec(webResultChunk)) !== null) {
-                webList.push(regExpWebListResult[1]);
-            }
-            divHTML += '<b>Web Results:</b><ol>\n            ' + webList.map(function (part) {
-                return '<li>' + part + '</li>';
+            var webDefinition = '<b>Web Results:</b><ol>\n            ' + data.webDefinitionLists.map(function (row) {
+                return '<li>' + row + '</li>';
             }).join('') + '</ol>';
-
-            var regExpGrammar = /<span style="color:#767676">([\s\S]*?)<\/span>/;
-            var grammarText = '<span class="googleGrammar"><b>Grammar:</b> ' + data.match(regExpGrammar)[1] + '</span><br>';
-
-            $('#dictionaryBox').html(divHTML).prepend(grammarText);
+            console.log(grammar);
+            console.log(definitions);
+            console.log(webDefinition);
+            $('#dictionaryBox').html(grammar + definitions + webDefinition);
         }
     }]);
 
@@ -382,7 +385,16 @@ var LearnMachine = function () {
 
     _createClass(LearnMachine, [{
         key: 'setCorrectAnswers',
-        value: function setCorrectAnswers() {}
+        value: function setCorrectAnswers(words) {
+            this.correctAnswers = words;
+        }
+    }, {
+        key: 'checkAnswer',
+        value: function checkAnswer(word) {
+            if (this.correctAnswers.includes(word)) {
+                return true;
+            }
+        }
     }]);
 
     return LearnMachine;
@@ -390,11 +402,10 @@ var LearnMachine = function () {
 
 $(document).ready(function () {});
 
+/*AjaxRequests.googleApi('cat')
+    .then(data => {
+        Draw.google(GoogleParse.getData(data))
+    });*/
 var learningMachine = new LearnMachine();
-
-AjaxRequests.getWordFromServer('run').then(function (data) {
-    console.log(Parse.yandex(data));
-    Draw.yandexNew(Parse.yandex(data));
-});
 
 //# sourceMappingURL=main-compiled.js.map

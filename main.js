@@ -117,14 +117,12 @@
         if ((!word)) return;
         AjaxRequests.getWordFromServer(word)
             .then(data => {
-                let parsedData = Parse.yandex(data);
-                Draw.yandexData(parsedData)
+                Draw.yandex(YandexParse.getData(data))
             }, err => {
                 if (err.status === 404) {
                     AjaxRequests.yandexApi(word)
                         .then(data => {
-                            let parsedData = Parse.yandex(data);
-                            Draw.yandexData(parsedData)
+                            Draw.yandex(YandexParse.getData(data))
                         })
                 }
             })
@@ -134,7 +132,7 @@
         let word = $('#word').val();
         AjaxRequests.googleApi(word)
             .then(data => {
-                Draw.googleData(data)
+                Draw.google(GoogleParse.getData(data))
             })
     }
 
@@ -192,34 +190,28 @@
 
  }
 
-class Parse {
+ class YandexParse {
 
-    static yandex (rawData) {
+    static getData (rawData) {
         let data = JSON.parse(rawData);
         if (data.def.length === 0) return;
-        let wordFullData = {
-            chunks: data.def, //adjective, noun, etc;
-            correctAnswers: []
-        };
-        wordFullData.chunks = wordFullData.chunks.map(description => {
+        return data.def.map(description => {
             return {
                 type: description.pos || ``,
                 transcription: description.ts ? `[${description.ts}]` : ``,
                 translations: description.tr
                     .map(translation => {
-                        wordFullData.correctAnswers.push(translation.text);
                         return {
-                            examples: Parse.transformExamples(translation.ex),
-                            synonyms: Parse.transformSynonyms(translation.syn),
-                            synonymsEn: Parse.transformSynonyms(translation.mean),
+                            examples: YandexParse.transformExamples(translation.ex),
+                            synonyms: YandexParse.transformSynonyms(translation.syn),
+                            synonymsEn: YandexParse.transformSynonyms(translation.mean),
                             translationType: translation.pos,
                             translation: translation.text
                         };
                     })
 
             };
-        });
-        return wordFullData
+        })
     }
 
     static transformExamples (examples = []) {
@@ -233,121 +225,119 @@ class Parse {
             return synonym.text
         })
     }
+
+    static findCorrectAnswers (parsedWords) {
+        return parsedWords.map(word => {
+            return word.translations.map(translation => {
+                return translation.translation
+            })
+        }).reduce((previousWords, currentWord) => {
+            return previousWords.concat(currentWord)
+        }, [])
+    }
+
+
+
 }
+
+ class GoogleParse {
+
+     static getData (rawData) {
+         return {
+             definitionLists : GoogleParse.findDefinitionLists(GoogleParse.findDefinitionChunks(rawData)),
+             webDefinitionLists: GoogleParse.findWebDefinitionLists(GoogleParse.findWebDefinitionChunk(rawData)),
+             grammar: GoogleParse.findGrammar(rawData)
+         }
+     }
+
+     static findDefinitionChunks(rawData) {
+         const regExp = /<b>(.*)\n[\s\S]*?<\/[\s\S]*?<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
+         let regExpResult;
+         let definitionsChunks = [];
+         while ((regExpResult = regExp.exec(rawData)) !== null) {
+             definitionsChunks.push({
+                 typeOfWord: regExpResult[1],
+                 body: regExpResult[2]
+             })
+         }
+         return definitionsChunks
+     }
+
+     static findDefinitionLists(chunks) {
+         return chunks.map(chunk => {
+             return {
+                 typeOfWord: chunk.typeOfWord,
+                 list: chunk.body.split(/<li style="list-style:decimal">/g).slice(1)
+             }
+         })
+     }
+
+
+     static findWebDefinitionChunk(rawData) {
+         const regExp = /Web Definitions[\s\S]*<\/ol>/g;
+         return rawData.match(regExp)[0];
+     }
+
+     static findWebDefinitionLists (chunk) {
+         let webList = [];
+         const regExp = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
+         let regExpResult;
+         while ((regExpResult = regExp.exec(chunk)) !== null) {
+             webList.push(regExpResult[1])
+         }
+         return webList
+     }
+
+     static findGrammar (rawData) {
+         const regExp = /<span style="color:#767676">([\s\S]*?)<\/span>/;
+         return rawData.match(regExp)[1].slice(0,-2);
+     }
+ }
 
 
  class Draw {
 
-    static yandexData(data) {
-        let response = JSON.parse(data);
-        if (response.def.length === 0) return;
-        let differentTypes = response.def; //adjective, noun else
-        let divHTML = ``;
-        differentTypes.map(description => {
-            let [type, transcription] = [description.pos || ``, description.ts ? `[${description.ts}]` : ``];
-            divHTML += `<br><span class="ital"><b>${type}</b></span> ${transcription} `;
-            let translations = description.tr;
-            translations.map((translation, index) => {
-                let examples = translation.ex;
-                let synonyms = translation.syn;
-                let meanings = translation.mean;
-                let typeTranslated = translation.pos;
-                let translatedText = translation.text;
-                divHTML+=`<br>${index+1}) ${translatedText}`;
-                if (examples) {
-                    divHTML += '. <br><span class="tabbed">Examples:</span> ' +
-                        examples.map(example => {
-                        let exampleText = example.text;
-                        let translationOfExample = example.tr[0].text;
-                        return `${exampleText} - ${translationOfExample}; `;
-                    }).join('').slice(0,-2)
-                }
-                if (synonyms) {
-                    divHTML += `. <br><span class="tabbed">Synonyms:</span> `+
-                        synonyms.map(synonym => {
-                            return `${synonym.text}; `
-                    }).join('').slice(0,-2)
-                }
-                if (meanings) {
-                    divHTML += `. <br><span class = "tabbed">Synonyms (en):</span> `+
-                        meanings.map(meaning => {
-                            return `${meaning.text}; `
-                        }).join('').slice(0,-2)
-                }
-
-            })
-        });
-        divHTML += '<hr>';
-        $('#translationBox').html(divHTML)
-    }
-
-
-     static yandexNew (data) {
-         let words = data.chunks;
-         let divHTML = ``;
-         words.map(word => {
-             divHTML += `<br><span class="ital"><b>${word.type}</b></span> ${word.transcription} `;
-             word.translations.map((translation, index) => {
-                 divHTML+=`<br>${index+1}) ${translation.translation}`;
-                 if (translation.examples.length !== 0) {
-                     divHTML += '. <br><span class="tabbed">Examples:</span> ' +
-                         translation.examples.join('; ');
-                 }
-                 if (translation.synonyms.length !== 0) {
-                     divHTML += `. <br><span class="tabbed">Synonyms:</span> `+
-                         translation.synonyms.join('; ');
-                 }
-                 if (translation.synonymsEn.length !== 0) {
-                     divHTML += `. <br><span class="tabbed">Synonyms (en):</span> `+
-                         translation.synonymsEn.join('; ');
-                 }
-             })
-         });
-         divHTML += '<hr>';
+     static yandex (words) {
+         let divHTML = words.map(word => {
+             return `<br><span class="ital"><b>${word.type}</b></span> ${word.transcription} ` +
+                 word.translations.map((translation, index) => {
+                     let innerHTML =`<br>${index+1}) ${translation.translation}`;
+                     if (translation.examples.length !== 0) {
+                         innerHTML += '. <br><span class="tabbed">Examples:</span> ' +
+                             translation.examples.join('; ');
+                     }
+                     if (translation.synonyms.length !== 0) {
+                         innerHTML += `. <br><span class="tabbed">Synonyms:</span> `+
+                             translation.synonyms.join('; ');
+                     }
+                     if (translation.synonymsEn.length !== 0) {
+                         innerHTML += `. <br><span class="tabbed">Synonyms (en):</span> `+
+                             translation.synonymsEn.join('; ');
+                     }
+                     return innerHTML
+                 }).join('')
+            }) + '<hr>';
          $('#translationBox').html(divHTML)
      }
 
-    static googleData (data) {
-        let divHTML = ``;
-        let regExpChunk = /<b>(.*)\n[\s\S]*?<\/[\s\S]*?<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
-        let regExpResultChunk;
-        let definitionsChunks = [];
-        while ((regExpResultChunk = regExpChunk.exec(data)) !== null) {
-            definitionsChunks.push({
-                typeOfWord: regExpResultChunk[1],
-                body: regExpResultChunk[2]
-            })
-        }
-        definitionsChunks.map(chunk => {
-            let orderedList = chunk.body.split(/<li style="list-style:decimal">/g);
-            orderedList.shift();
-            divHTML += `<b>${chunk.typeOfWord}</b><br><ol>
-                ${orderedList.map(definition => {
-                    return `<li>${definition.slice(0,-10)}</li>`
+     static google (data) {
+         const grammar = `<span class="googleGrammar"><b>Grammar:</b> ${data.grammar}</span><br>`;
+         const definitions = data.definitionLists.map(chunk => {
+             return `<b>${chunk.typeOfWord}</b><br><ol>
+                ${chunk.list.map(definition => {
+                    return `<li>${definition}</li>`
                 }).join('')}</ol><hr>`
-        });
-
-
-        let regExpWeb = /Web Definitions[\s\S]*<\/ol>/g;
-        let webResultChunk = data.match(regExpWeb)[0];
-        let webList = [];
-        let regExpWebList = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
-        let regExpWebListResult;
-        while ((regExpWebListResult = regExpWebList.exec(webResultChunk)) !== null) {
-            webList.push(regExpWebListResult[1])
-        }
-        divHTML += `<b>Web Results:</b><ol>
-            ${webList.map(part => {
-                return `<li>${part}</li>`
+         });
+         const webDefinition = `<b>Web Results:</b><ol>
+            ${data.webDefinitionLists.map(row => {
+                return `<li>${row}</li>`
             }).join('')}</ol>`;
+         console.log(grammar);
+         console.log(definitions);
+         console.log(webDefinition);
+         $('#dictionaryBox').html(grammar+definitions+webDefinition)
+     }
 
-
-        let regExpGrammar = /<span style="color:#767676">([\s\S]*?)<\/span>/;
-        let grammarText = `<span class="googleGrammar"><b>Grammar:</b> ${data.match(regExpGrammar)[1]}</span><br>`;
-
-        
-        $('#dictionaryBox').html(divHTML).prepend(grammarText);
-    }
 }
 
 
@@ -357,8 +347,14 @@ class Parse {
          this.correctAnswers = []
      }
 
-     setCorrectAnswers () {
+     setCorrectAnswers (words) {
+        this.correctAnswers = words
+     }
 
+     checkAnswer (word) {
+         if (this.correctAnswers.includes(word)) {
+             return true
+         }
      }
 
  }
@@ -373,11 +369,9 @@ $(document).ready(() => {
 
 });
 
+ /*AjaxRequests.googleApi('cat')
+     .then(data => {
+         Draw.google(GoogleParse.getData(data))
+     });*/
  let learningMachine = new LearnMachine();
 
-AjaxRequests.getWordFromServer('run')
- .then(data => {
-     console.log(Parse.yandex(data));
-    Draw.yandexNew(Parse.yandex(data));
-
- });
