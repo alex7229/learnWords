@@ -3,12 +3,16 @@
     <properties>
       <sourceFilesUrls>
         <item url="file://$PROJECT_DIR$/main-compiled.js" />
-        <item url="file://$PROJECT_DIR$/es5.es5-compiled.js" />
+        <item url="file://$PROJECT_DIR$/compiled/main-compiled.js" />
+        <item url="file://$PROJECT_DIR$/comp/main-compiled.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/main-compiled.js" />
       <root url="file://$PROJECT_DIR$/es5.es5-compiled.js" />
+      <root url="file://$PROJECT_DIR$/compiled/main-compiled.js" />
+      <root url="file://$PROJECT_DIR$/main-compiled.js" />
+      <root url="file://$PROJECT_DIR$/compiled/main-compiled.js" />
+      <root url="file://$PROJECT_DIR$/comp/main-compiled.js" />
     </CLASSES>
     <SOURCES />
   </library>

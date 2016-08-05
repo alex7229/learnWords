@@ -113,32 +113,35 @@
  class Controller {
 
     static getTranslation() {
-        const word = $('#word').val();
+        const word = document.getElementById('word').value;
         if ((!word)) return;
         AjaxRequests.getWordFromServer(word)
             .then(data => {
-                Draw.yandex(YandexParse.getData(data))
+                View.yandex(YandexParse.getData(data))
             }, err => {
                 if (err.status === 404) {
                     AjaxRequests.yandexApi(word)
                         .then(data => {
-                            Draw.yandex(YandexParse.getData(data))
+                            View.yandex(YandexParse.getData(data))
                         })
                 }
             })
     }
 
     static getMeaning() {
-        const word = $('#word').val();
+        const word = document.getElementById('word').value;
         if ((!word)) return;
         AjaxRequests.googleApi(word)
             .then(data => {
-                Draw.google(GoogleParse.getData(data))
+                View.google(GoogleParse.getData(data))
             })
     }
 
-    getWords() {
-
+    static listenButtons () {
+        document.getElementById("getMeaning").onclick = Controller.getMeaning;
+        document.getElementById("getTranslation").onclick  = Controller.getTranslation;
+        document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
+        document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine)
     }
 
 }
@@ -147,56 +150,59 @@
  class AjaxRequests {
 
      static yandexApi(word) {
-         return new Promise (resolve => {
-             $.ajax({
-                 url: '/getTranslation',
-                 type: 'POST',
-                 data: {
-                     word
-                 }
-             }).done(data => {
-                 resolve(data)
-             });
-         });
+        return new Promise(resolve => {
+           fetch('/getTranslation', {
+               method: 'post',
+               headers: {
+                   'Content-Type': 'application/json'
+               },
+               body: JSON.stringify({
+                   word
+               })
+           })
+               .then(response => {
+                   resolve (response.text())
+               })
+
+        });
      }
 
      static googleApi (word) {
          return new Promise (resolve => {
-             $.ajax({
-                 url: '/getMeaning',
-                 type: 'POST',
-                 data: {
-                     word
-                 }
-             }).done(data => {
-                 resolve(data)
-             });
+            fetch('/getMeaning', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    word
+                })
+            })
+                .then(response => {
+                    resolve(response.text())
+                })
          });
      }
 
      static getWordFromServer (word) {
-         return new Promise ((resolve, reject) => {
-             $.ajax({
-                 url: `http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/${word}.txt`,
-                 type: 'GET'
-             }).done(data => {
-                 resolve(data)
-             }).catch(err => {
-                 reject (err)
-             })
+         return new Promise (resolve => {
+             fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/${word}.txt`)
+                 .then(response => {
+                     resolve(response.text())
+                 }, err => {
+                     reject(err)
+                 })
          })
      }
 
      static getWordList () {
-         return new Promise ((resolve, reject) => {
-             $.ajax({
-                 url: `http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt`,
-                 type: 'GET'
-             }).done(data => {
-                 resolve(data)
-             }).catch(err => {
-                 reject (err)
-             })
+         return new Promise (resolve => {
+             fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt`)
+                 .then(response => {
+                     resolve(response.text())
+                 }, err => {
+                     reject(err)
+                 })
          })
      }
 
@@ -319,29 +325,29 @@
  }
 
 
- class Draw {
+ class View {
 
      static yandex (words) {
-         const divHTML = words.map(word => {
-             return `<br><span class="ital"><b>${word.type}</b></span> ${word.transcription} ` +
-                 word.translations.map((translation, index) => {
-                     let innerHTML =`<br>${index+1}) ${translation.translation}`;
-                     if (translation.examples.length !== 0) {
-                         innerHTML += '. <br><span class="tabbed">Examples:</span> ' +
-                             translation.examples.join('; ');
-                     }
-                     if (translation.synonyms.length !== 0) {
-                         innerHTML += `. <br><span class="tabbed">Synonyms:</span> `+
-                             translation.synonyms.join('; ');
-                     }
-                     if (translation.synonymsEn.length !== 0) {
-                         innerHTML += `. <br><span class="tabbed">Synonyms (en):</span> `+
-                             translation.synonymsEn.join('; ');
-                     }
-                     return innerHTML
-                 }).join('')
-            }) + '<hr>';
-         $('#translationBox').html(divHTML)
+         document.getElementById('translationBox').innerHTML =
+             words.map(word => {
+                 return `<br><span class="ital"><b>${word.type}</b></span> ${word.transcription} ` +
+                     word.translations.map((translation, index) => {
+                         let innerHTML =`<br>${index+1}) ${translation.translation}`;
+                         if (translation.examples.length !== 0) {
+                             innerHTML += '. <br><span class="tabbed">Examples:</span> ' +
+                                 translation.examples.join('; ');
+                         }
+                         if (translation.synonyms.length !== 0) {
+                             innerHTML += `. <br><span class="tabbed">Synonyms:</span> `+
+                                 translation.synonyms.join('; ');
+                         }
+                         if (translation.synonymsEn.length !== 0) {
+                             innerHTML += `. <br><span class="tabbed">Synonyms (en):</span> `+
+                                 translation.synonymsEn.join('; ');
+                         }
+                         return innerHTML
+                     }).join('')
+                }) + '<hr>';
      }
 
      static google (data) {
@@ -356,7 +362,11 @@
             ${data.webDefinitionLists.map(row => {
                 return `<li>${row}</li>`
             }).join('')}</ol>`;
-         $('#dictionaryBox').html(grammar+definitions+webDefinition)
+         document.getElementById('dictionaryBox').innerHTML = grammar + definitions+ webDefinition
+     }
+
+     static showQuestion (word) {
+         document.getElementById('questionedWord').textContent = word
      }
 
 }
@@ -379,7 +389,7 @@
      }
 
      checkAnswer () {
-         const userAnswer = $('#answerWord').val();
+         const userAnswer = document.getElementById('answerWord').value;
          if (this.correctAnswers.includes(userAnswer)) {
              console.log('answer is correct')
          } else {
@@ -390,14 +400,14 @@
      sendQuestion () {
          const wordNumber = Math.ceil(Math.random()*1000);
          const word = this.allWords[wordNumber].word;
-         $('#questionedWord').text(word);
-         this.getAnswer(word)
+         this.getAnswer(word);
+         View.showQuestion(word)
      }
 
      getAnswer (word) {
          AjaxRequests.getWordFromServer(word)
              .then(data => {
-                 this.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data))
+                 this.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
              }, err => {
                  if (err.status === 404) {
                      AjaxRequests.yandexApi(word)
@@ -413,16 +423,14 @@
 
 
 
- /*AjaxRequests.googleApi('cat')
-     .then(data => {
-         Draw.google(GoogleParse.getData(data))
-     });*/
 
- let learningMachine = new LearnMachine();
+ var learningMachine = new LearnMachine();
  learningMachine.getAllWords();
-
- $(document).ready(() => {
+ 
+ 
+ window.onload = () => {
      setTimeout(() => {
-         learningMachine.sendQuestion()
+         learningMachine.sendQuestion();
+         Controller.listenButtons();
      }, 2500)
- });
+ };
