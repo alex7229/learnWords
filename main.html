@@ -4,9 +4,21 @@
     <meta charset="UTF-8">
     <title>Learning words</title>
     <link rel="stylesheet" href="main.css"/>
-    <script src="main.compiled.js" async></script>
+    <script src="js/main.compiled.js" async></script>
 </head>
 <body>
+<form id="authentication">
+    <label for="login">Login (automatic registration)</label><br>
+    <input type="text" id="login"><br>
+    <label for="password">Password</label><br>
+    <input type="text" id="password"><br>
+    <button type="button">Submit</button>
+    <div id="profileData">
+        <p>User: <span id='profileName'></span></p>
+        <button type="button">LogOut</button>
+    </div>
+    <div class='notification'></div>
+</form>
 <form>
     <label for="word">type word for search</label><br>
     <input type="text" id="word">

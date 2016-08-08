@@ -1,3 +1,14 @@
+html {
+    background: url('http://tup1tsa.bounceme.net/images/blackBackground.jpg');
+}
+body {
+    margin: auto;
+    width: 1000px;
+    background: #faf8ef;
+}
+html, body {
+    height: 100%
+}
 .ital {
     font-style: oblique;
 }
@@ -13,4 +24,14 @@
 }
 #questionedWord{
     color: darkred;
+}
+#authentication {
+    float: right;
+    width: 250px
+}
+#profileData {
+    display: none
+}
+.notification {
+    display: none
 }

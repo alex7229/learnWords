@@ -1,115 +1,8 @@
-
- //parsing from txt.rawData into JSON
-/*$.ajax({
-    url: `http://tup1tsa.bounceme.net/learnWords/wordsLists/rawLists/bast/Lemmatized/2+2+3frq.txt`
-})
-    .then(data => {
-        //console.log(data);
-        let rawData = data.toLowerCase().replace(/[!)(]/g, '');
-        let regExpGroups = /----- \d{1,2} -----/g;
-        let wordGroups = rawData.split(regExpGroups);
-        let bigList = [];
-        let wordNumber = 0;
-        for (let i=1; i<=21; i++) {
-            let group = wordGroups[i];
-            let regExpWords = /([\w'-]+)\r\n(?:\s{4}([ \w,*'-]+)\r\n)?/g;
-            let regExpResult;
-            while ((regExpResult = regExpWords.exec(group)) !== null) {
-                wordNumber++;
-                let word = {
-                    word: regExpResult[1],
-                    number: wordNumber,
-                    group: i,
-                    differentSpellings: regExpResult[2]
-                };
-                if (!word.word.match(/-/)) {
-                    bigList.push(word);
-                }
-            }
-        }
-
-
-
-
-        //duplicates
-        bigList.splice(19127, 1);
-        bigList.splice(2821, 1);
-        bigList.splice(10143, 1);
-        bigList.splice(10153, 1);
-        console.log(((JSON.stringify(bigList))));
-        bigList.map((currentWord, index) => {
-            let sameWords = bigList.filter(possibleWord => {
-                if (currentWord.word === possibleWord.word) {
-                    return possibleWord
-                }
-            });
-            if (sameWords.length > 1) {
-                console.log(`word ${currentWord.word} has duplicates, index is ${index}`)
-            }
-        })
-    });
-*/
-
-
-//get sorted Data
-/*$.ajax({
-    url: 'http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt'
-})
-.done((data) => {
-    let mainWords = JSON.parse(data);
-    $.ajax({
-            url: 'http://tup1tsa.bounceme.net/learnWords/wordsLists/rawLists/300k.txt'
-        })
-        .done((data) => {
-            let superBigList = [];
-
-            let powerWordsRaw = data;
-            let regExp = /(\w+)\s+(\d+)/g;
-            let regExpResult;
-            while ((regExpResult = (regExp.exec(powerWordsRaw)))!==null) {
-                superBigList.push({
-                    word: regExpResult[1],
-                    power: parseInt(regExpResult[2])
-                })
-            }
-
-
-            let power = 3000;
-            for (let i=0; i<mainWords.length; i++) {
-                let mainWord = mainWords[i];
-                for (let j=0; j<superBigList.length; j++) {
-                    let powerWord = superBigList[j];
-                    if (mainWord.word === powerWord.word) {
-                        mainWord.power = powerWord.power;
-                        break
-                    }
-                }
-                if (!mainWord.power) {
-                    mainWord.power = power;
-                    power--
-                }
-            }
-
-
-            function compare (a,b) {
-                if (a.power>b.power) return -1;
-                if (a.power<b.power) return 1;
-                return 0
-            }
-            mainWords.sort(compare);
-            console.log((JSON.stringify(mainWords)));
-
-
-
-        });
-
-});*/
-
-
-
 //todo -  add sound (when u guessed right answer) from fallout4, add authentication (to save user progress)
+require('whatwg-fetch');
+import AuthClass from './authentication.js';
 
-
+ 
  class Controller {
 
     static getTranslation() {
@@ -148,10 +41,20 @@
 
 
  class AjaxRequests {
+     
+     static checkStatus (response) {
+         if (response.status >= 200 && response.status < 300) {
+             return response
+         } else {
+             const error = new Error(response.statusText);
+             error.response = response;
+             throw error
+         }
+     }
 
      static yandexApi(word) {
         return new Promise(resolve => {
-           fetch('/getTranslation', {
+           fetch('/learnWords/getTranslation', {
                method: 'post',
                headers: {
                    'Content-Type': 'application/json'
@@ -160,6 +63,7 @@
                    word
                })
            })
+               .then(AjaxRequests.checkStatus)
                .then(response => {
                    resolve (response.text())
                })
@@ -169,7 +73,7 @@
 
      static googleApi (word) {
          return new Promise (resolve => {
-            fetch('/getMeaning', {
+            fetch('/learnWords/getMeaning', {
                 method: 'post',
                 headers: {
                     'Content-Type': 'application/json'
@@ -178,6 +82,7 @@
                     word
                 })
             })
+                .then(AjaxRequests.checkStatus)
                 .then(response => {
                     resolve(response.text())
                 })
@@ -185,8 +90,9 @@
      }
 
      static getWordFromServer (word) {
-         return new Promise (resolve => {
+         return new Promise ((resolve,reject) => {
              fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/${word}.txt`)
+                 .then(AjaxRequests.checkStatus)
                  .then(response => {
                      resolve(response.text())
                  }, err => {
@@ -196,8 +102,27 @@
      }
 
      static getWordList () {
-         return new Promise (resolve => {
+         return new Promise ((resolve, reject) => {
              fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt`)
+                 .then(AjaxRequests.checkStatus)
+                 .then(response => {
+                     resolve(response.text())
+                 }, err => {
+                     reject(err)
+                 })
+         })
+     }
+     
+     static checkAuth (data) {
+         return new Promise ((resolve, reject) => {
+             fetch('/auth', {
+                 method: 'post',
+                 headers: {
+                     'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify(data)
+             })
+                 .then(AjaxRequests.checkStatus)
                  .then(response => {
                      resolve(response.text())
                  }, err => {
@@ -369,6 +294,30 @@
          document.getElementById('questionedWord').textContent = word
      }
 
+     static playCorrectAnswerSound () {
+         const audio = new Audio('audio/whoosh.mp3');
+         audio.play();
+     }
+
+     static showUserInfo () {
+         let auth = new AuthClass();
+         const data = auth.findLocalAuthData();
+         if (data) {
+             AjaxRequests.checkAuth(data)
+                 .then(() => {
+                     document.getElementById('authentication').style.display = 'none';
+                     document.querySelector('#authentication .notification').style.display = 'none';
+                     document.getElementById('profileData').style.display = 'block';
+                     document.getElementById('profileName').value = auth.name
+                 }, err => {
+                     let notificationElem = document.querySelector('#authentication .notification');
+                     notificationElem.style.display = 'block';
+                     console.log(err);
+                     //notificationElem.textContent = err
+                 })
+         }
+     }
+
 }
 
 
@@ -429,8 +378,12 @@
  
  
  window.onload = () => {
+     View.showUserInfo();
      setTimeout(() => {
          learningMachine.sendQuestion();
          Controller.listenButtons();
      }, 2500)
  };
+
+
+
