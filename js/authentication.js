@@ -6,17 +6,16 @@ export default class {
         
     }
 
-    getToken () {
+    checkUserInfo () {
         const authData = this.findLocalAuthData();
         if (authData) {
+            const encryptedData = this.encryptData(authData);
             fetch('/auth', {
-                method: 'post',
+                method:'post',
                 headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    authData: JSON.stringify(authData)
-                })
+                    'Content-Type': 'application/json',
+                    'authorization': encryptedData
+                }
             })
                 .then(response => {
                     console.log(response)
@@ -27,8 +26,12 @@ export default class {
     }
 
     findLocalAuthData () {
-        const name = localStorage.getItem('authName');
-        const password = localStorage.getItem('authPassword');
+        let name = localStorage.getItem('authName');
+        let password = localStorage.getItem('authPassword');
+        if (!(name && password)) {
+            name = document.getElementById('login').value;
+            password = document.getElementById('password').value;
+        }
         if (name && password) {
             return {
                 name,
@@ -36,6 +39,11 @@ export default class {
             }
         }
     }
+
+    encryptData (userInfo) {
+        return btoa(`${userInfo.name}:${userInfo.password}`)
+    }
+
     
     
 }

@@ -34,7 +34,11 @@ import AuthClass from './authentication.js';
         document.getElementById("getMeaning").onclick = Controller.getMeaning;
         document.getElementById("getTranslation").onclick  = Controller.getTranslation;
         document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
-        document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine)
+        document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
+        document.getElementById('loginBtn').onclick = () => {
+            let auth = new AuthClass();
+            auth.checkUserInfo()
+        }
     }
 
 }
@@ -94,7 +98,7 @@ import AuthClass from './authentication.js';
              fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/${word}.txt`)
                  .then(AjaxRequests.checkStatus)
                  .then(response => {
-                     resolve(response.text())
+                     resolve(response.json())
                  }, err => {
                      reject(err)
                  })
@@ -103,10 +107,10 @@ import AuthClass from './authentication.js';
 
      static getWordList () {
          return new Promise ((resolve, reject) => {
-             fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt`)
+             fetch(`http://tup1tsa.bounceme.net/learnWords/wordsLists/sortedWordsList.json`)
                  .then(AjaxRequests.checkStatus)
                  .then(response => {
-                     resolve(response.text())
+                     resolve(response.json())
                  }, err => {
                      reject(err)
                  })
@@ -135,10 +139,9 @@ import AuthClass from './authentication.js';
 
  class YandexParse {
 
-    static getData (rawData) {
-        const data = JSON.parse(rawData);
-        if (data.def.length === 0) return;
-        return data.def.map(description => {
+    static getData (jsonData) {
+        if (jsonData.def.length === 0) return;
+        return jsonData.def.map(description => {
             return {
                 type: description.pos || ``,
                 transcription: description.ts ? `[${description.ts}]` : ``,
@@ -331,7 +334,7 @@ import AuthClass from './authentication.js';
      getAllWords () {
         AjaxRequests.getWordList()
             .then(data => {
-                this.allWords = JSON.parse(data)
+                this.allWords = data
             }, err => {
                 throw err
             })
@@ -358,12 +361,7 @@ import AuthClass from './authentication.js';
              .then(data => {
                  this.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
              }, err => {
-                 if (err.status === 404) {
-                     AjaxRequests.yandexApi(word)
-                         .then(data => {
-                             this.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data))
-                         })
-                 }
+                 throw err
              })
      }
 
@@ -376,13 +374,13 @@ import AuthClass from './authentication.js';
  var learningMachine = new LearnMachine();
  learningMachine.getAllWords();
  
- 
  window.onload = () => {
      View.showUserInfo();
+
      setTimeout(() => {
          learningMachine.sendQuestion();
          Controller.listenButtons();
-     }, 2500)
+     }, 200)
  };
 
 

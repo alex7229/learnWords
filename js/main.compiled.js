@@ -453,18 +453,17 @@ var _class = function () {
     }
 
     _createClass(_class, [{
-        key: 'getToken',
-        value: function getToken() {
+        key: 'checkUserInfo',
+        value: function checkUserInfo() {
             var authData = this.findLocalAuthData();
             if (authData) {
+                var encryptedData = this.encryptData(authData);
                 fetch('/auth', {
                     method: 'post',
                     headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        authData: JSON.stringify(authData)
-                    })
+                        'Content-Type': 'application/json',
+                        'authorization': encryptedData
+                    }
                 }).then(function (response) {
                     console.log(response);
                 });
@@ -477,12 +476,21 @@ var _class = function () {
         value: function findLocalAuthData() {
             var name = localStorage.getItem('authName');
             var password = localStorage.getItem('authPassword');
+            if (!(name && password)) {
+                name = document.getElementById('login').value;
+                password = document.getElementById('password').value;
+            }
             if (name && password) {
                 return {
                     name: name,
                     password: password
                 };
             }
+        }
+    }, {
+        key: 'encryptData',
+        value: function encryptData(userInfo) {
+            return btoa(userInfo.name + ':' + userInfo.password);
         }
     }]);
 
@@ -543,6 +551,10 @@ var Controller = function () {
             document.getElementById("getTranslation").onclick = Controller.getTranslation;
             document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
             document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
+            document.getElementById('loginBtn').onclick = function () {
+                var auth = new _authentication2.default();
+                auth.checkUserInfo();
+            };
         }
     }]);
 
@@ -604,7 +616,7 @@ var AjaxRequests = function () {
         value: function getWordFromServer(word) {
             return new Promise(function (resolve, reject) {
                 fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/' + word + '.txt').then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.text());
+                    resolve(response.json());
                 }, function (err) {
                     reject(err);
                 });
@@ -614,8 +626,8 @@ var AjaxRequests = function () {
         key: 'getWordList',
         value: function getWordList() {
             return new Promise(function (resolve, reject) {
-                fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/sorted_34k.txt').then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.text());
+                fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/sortedWordsList.json').then(AjaxRequests.checkStatus).then(function (response) {
+                    resolve(response.json());
                 }, function (err) {
                     reject(err);
                 });
@@ -650,10 +662,9 @@ var YandexParse = function () {
 
     _createClass(YandexParse, null, [{
         key: 'getData',
-        value: function getData(rawData) {
-            var data = JSON.parse(rawData);
-            if (data.def.length === 0) return;
-            return data.def.map(function (description) {
+        value: function getData(jsonData) {
+            if (jsonData.def.length === 0) return;
+            return jsonData.def.map(function (description) {
                 return {
                     type: description.pos || '',
                     transcription: description.ts ? '[' + description.ts + ']' : '',
@@ -870,7 +881,7 @@ var LearnMachine = function () {
             var _this = this;
 
             AjaxRequests.getWordList().then(function (data) {
-                _this.allWords = JSON.parse(data);
+                _this.allWords = data;
             }, function (err) {
                 throw err;
             });
@@ -901,11 +912,7 @@ var LearnMachine = function () {
             AjaxRequests.getWordFromServer(word).then(function (data) {
                 _this2.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
             }, function (err) {
-                if (err.status === 404) {
-                    AjaxRequests.yandexApi(word).then(function (data) {
-                        _this2.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
-                    });
-                }
+                throw err;
             });
         }
     }]);
@@ -918,10 +925,11 @@ learningMachine.getAllWords();
 
 window.onload = function () {
     View.showUserInfo();
+
     setTimeout(function () {
         learningMachine.sendQuestion();
         Controller.listenButtons();
-    }, 2500);
+    }, 200);
 };
 
 },{"./authentication.js":2,"whatwg-fetch":1}]},{},[3])
