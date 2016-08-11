@@ -1,30 +1,20 @@
 /**
  * Created by tup1tsa on 08.08.2016.
  */
-export default class {
-    constructor () {
-        
-    }
+import login from './AjaxRequests/login';
 
-    checkUserInfo () {
+export default class {
+
+    checkUserInfo (encryptedLoginPassword) {
         const authData = this.findLocalAuthData();
         if (authData) {
             const encryptedData = this.encryptData(authData);
-            fetch('/auth', {
-                method:'post',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'authorization': encryptedData
-                }
-            })
-                .then(response => {
-                    console.log(response)
-                })
+            login(encryptedLoginPassword)
         } else {
             throw new Error('U have not declared password or login')
         }
     }
-
+    
     findLocalAuthData () {
         let name = localStorage.getItem('authName');
         let password = localStorage.getItem('authPassword');

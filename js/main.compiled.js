@@ -440,13 +440,361 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _statusHandling = require('./statusHandling');
+
+var _statusHandling2 = _interopRequireDefault(_statusHandling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function () {
+    return new Promise(function (resolve, reject) {
+        fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/sortedWordsList.json').then(_statusHandling2.default).then(function (response) {
+            resolve(response.json());
+        }, function (err) {
+            reject(err);
+        });
+    });
+}; /**
+    * Created by tup1tsa on 11.08.2016.
+    */
+
+},{"./statusHandling":6}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _statusHandling = require('./statusHandling');
+
+var _statusHandling2 = _interopRequireDefault(_statusHandling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (word) {
+    return new Promise(function (resolve) {
+        fetch('/learnWords/getMeaning', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                word: word
+            })
+        }).then(_statusHandling2.default).then(function (response) {
+            resolve(response.text());
+        });
+    });
+}; /**
+    * Created by tup1tsa on 11.08.2016.
+    */
+
+},{"./statusHandling":6}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _statusHandling = require('./statusHandling');
+
+var _statusHandling2 = _interopRequireDefault(_statusHandling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (encryptedLoginPassword) {
+    return new Promise(function (resolve, reject) {
+        fetch('/auth/login', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': encryptedLoginPassword
+            }
+        }).then(_statusHandling2.default).then(function (response) {
+            resolve(response.text());
+        }, function (err) {
+            reject(err);
+        });
+    });
+}; /**
+    * Created by tup1tsa on 11.08.2016.
+    */
+
+},{"./statusHandling":6}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _statusHandling = require('./statusHandling');
+
+var _statusHandling2 = _interopRequireDefault(_statusHandling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (word) {
+    return new Promise(function (resolve, reject) {
+        fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/' + word + '.txt').then(_statusHandling2.default).then(function (response) {
+            resolve(response.json());
+        }, function (err) {
+            reject(err);
+        });
+    });
+}; /**
+    * Created by tup1tsa on 11.08.2016.
+    */
+
+},{"./statusHandling":6}],6:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+/**
+ * Created by tup1tsa on 11.08.2016.
+ */
+exports.default = function (response) {
+    if (response.status >= 200 && response.status < 300) {
+        return response;
+    } else {
+        var error = new Error(response.statusText);
+        error.response = response;
+        throw error;
+    }
+};
+
+},{}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _statusHandling = require('./statusHandling');
+
+var _statusHandling2 = _interopRequireDefault(_statusHandling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (word) {
+    return new Promise(function (resolve) {
+        fetch('/learnWords/getTranslation', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                word: word
+            })
+        }).then(_statusHandling2.default).then(function (response) {
+            resolve(response.text());
+        });
+    });
+}; /**
+    * Created by tup1tsa on 11.08.2016.
+    */
+
+},{"./statusHandling":6}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
- * Created by tup1tsa on 08.08.2016.
+ * Created by tup1tsa on 11.08.2016.
  */
+var _class = function () {
+    function _class(rawData) {
+        _classCallCheck(this, _class);
+
+        this.rawData = rawData;
+    }
+
+    _createClass(_class, [{
+        key: 'getData',
+        value: function getData() {
+            return {
+                definitionLists: this.findDefinitionLists(this.findDefinitionChunks()),
+                webDefinitionLists: this.findWebDefinitionLists(this.findWebDefinitionChunk()),
+                grammar: this.findGrammar()
+            };
+        }
+    }, {
+        key: 'findDefinitionChunks',
+        value: function findDefinitionChunks() {
+            var regExp = /<b>(.*)\n[\s\S]*?<\/[\s\S]*?<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
+            var regExpResult = void 0;
+            var definitionsChunks = [];
+            while ((regExpResult = regExp.exec(this.rawData)) !== null) {
+                definitionsChunks.push({
+                    typeOfWord: regExpResult[1],
+                    body: regExpResult[2]
+                });
+            }
+            return definitionsChunks;
+        }
+    }, {
+        key: 'findDefinitionLists',
+        value: function findDefinitionLists(chunks) {
+            var _this = this;
+
+            return chunks.map(function (chunk) {
+                var list = chunk.body.split(/<li style="list-style:decimal">/g).slice(1).map(function (listValue) {
+                    return _this.deleteUnnecessaryRow(listValue);
+                });
+                return {
+                    typeOfWord: chunk.typeOfWord,
+                    list: list
+                };
+            });
+        }
+    }, {
+        key: 'deleteUnnecessaryRow',
+        value: function deleteUnnecessaryRow(listValue) {
+            var regExp = /color:#767676/;
+            if (listValue.match(regExp)) {
+                return listValue;
+            } else {
+                return listValue.replace(/<div[\s\S]*<\/div>/, '');
+            }
+        }
+    }, {
+        key: 'findWebDefinitionChunk',
+        value: function findWebDefinitionChunk() {
+            var regExp = /Web Definitions[\s\S]*<\/ol>/g;
+            return this.rawData.match(regExp)[0];
+        }
+    }, {
+        key: 'findWebDefinitionLists',
+        value: function findWebDefinitionLists(chunk) {
+            var webList = [];
+            var regExp = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
+            var regExpResult = void 0;
+            while ((regExpResult = regExp.exec(chunk)) !== null) {
+                webList.push(regExpResult[1]);
+            }
+            return webList;
+        }
+    }, {
+        key: 'findGrammar',
+        value: function findGrammar() {
+            var regExp = /<span style="color:#767676">([\s\S]*?)<\/span>/;
+            return this.rawData.match(regExp)[1].slice(0, -2);
+        }
+    }]);
+
+    return _class;
+}();
+
+exports.default = _class;
+
+},{}],9:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Created by tup1tsa on 11.08.2016.
+ */
+var _class = function () {
+    function _class(data) {
+        _classCallCheck(this, _class);
+
+        this.jsonData = data;
+    }
+
+    _createClass(_class, [{
+        key: "getData",
+        value: function getData() {
+            var _this = this;
+
+            if (this.jsonData.def.length === 0) return;
+            return this.jsonData.def.map(function (description) {
+                return {
+                    type: description.pos || "",
+                    transcription: description.ts ? "[" + description.ts + "]" : "",
+                    translations: description.tr.map(function (translation) {
+                        return {
+                            examples: _this.transformExamples(translation.ex),
+                            synonyms: _this.transformSynonyms(translation.syn),
+                            synonymsEn: _this.transformSynonyms(translation.mean),
+                            translationType: translation.pos,
+                            translation: translation.text
+                        };
+                    })
+
+                };
+            });
+        }
+    }, {
+        key: "transformExamples",
+        value: function transformExamples() {
+            var examples = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+            return examples.map(function (example) {
+                return example.text + " - " + example.tr[0].text;
+            });
+        }
+    }, {
+        key: "transformSynonyms",
+        value: function transformSynonyms() {
+            var synonyms = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+            return synonyms.map(function (synonym) {
+                return synonym.text;
+            });
+        }
+    }, {
+        key: "findCorrectAnswers",
+        value: function findCorrectAnswers(parsedWords) {
+            return parsedWords.map(function (word) {
+                return word.translations.map(function (translation) {
+                    return translation.translation.toLowerCase();
+                });
+            }).reduce(function (previousWords, currentWord) {
+                return previousWords.concat(currentWord);
+            }, []);
+        }
+    }]);
+
+    return _class;
+}();
+
+exports.default = _class;
+
+},{}],10:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 08.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _login = require('./AjaxRequests/login');
+
+var _login2 = _interopRequireDefault(_login);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 var _class = function () {
     function _class() {
         _classCallCheck(this, _class);
@@ -454,19 +802,11 @@ var _class = function () {
 
     _createClass(_class, [{
         key: 'checkUserInfo',
-        value: function checkUserInfo() {
+        value: function checkUserInfo(encryptedLoginPassword) {
             var authData = this.findLocalAuthData();
             if (authData) {
                 var encryptedData = this.encryptData(authData);
-                fetch('/auth', {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'authorization': encryptedData
-                    }
-                }).then(function (response) {
-                    console.log(response);
-                });
+                (0, _login2.default)(encryptedLoginPassword);
             } else {
                 throw new Error('U have not declared password or login');
             }
@@ -499,14 +839,133 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],3:[function(require,module,exports){
+},{"./AjaxRequests/login":4}],11:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 11.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _getWordsList = require('./AjaxRequests/getWordsList');
+
+var _getWordsList2 = _interopRequireDefault(_getWordsList);
+
+var _savedYandexTranslation = require('./AjaxRequests/savedYandexTranslation');
+
+var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
+
+var _yandex = require('./Parse/yandex');
+
+var _yandex2 = _interopRequireDefault(_yandex);
+
+var _view = require('./view');
+
+var _view2 = _interopRequireDefault(_view);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _class = function () {
+    function _class() {
+        _classCallCheck(this, _class);
+
+        this.correctAnswers = [];
+        this.allWords = [];
+    }
+
+    _createClass(_class, [{
+        key: 'getAllWords',
+        value: function getAllWords() {
+            var _this = this;
+
+            (0, _getWordsList2.default)().then(function (data) {
+                _this.allWords = data;
+            }, function (err) {
+                throw err;
+            });
+        }
+    }, {
+        key: 'checkAnswer',
+        value: function checkAnswer() {
+            var userAnswer = document.getElementById('answerWord').value;
+            if (this.correctAnswers.indexOf(userAnswer) !== -1) {
+                console.log('answer is correct');
+            } else {
+                console.log('answer is incorrect');
+            }
+        }
+    }, {
+        key: 'sendQuestion',
+        value: function sendQuestion() {
+            var wordNumber = Math.ceil(Math.random() * 1000);
+            var word = this.allWords[wordNumber].word;
+            this.getAnswer(word);
+            _view2.default.showQuestion(word);
+        }
+    }, {
+        key: 'getAnswer',
+        value: function getAnswer(word) {
+            var _this2 = this;
+
+            (0, _savedYandexTranslation2.default)(word).then(function (data) {
+                var parse = new _yandex2.default(data);
+                _this2.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
+            }, function (err) {
+                throw err;
+            });
+        }
+    }]);
+
+    return _class;
+}();
+
+// todo - view is changing by model, not controller.
+
+
+exports.default = _class;
+
+},{"./AjaxRequests/getWordsList":2,"./AjaxRequests/savedYandexTranslation":5,"./Parse/yandex":9,"./view":13}],12:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _yandexApi = require('./AjaxRequests/yandexApi');
+
+var _yandexApi2 = _interopRequireDefault(_yandexApi);
+
+var _googleApi = require('./AjaxRequests/googleApi');
+
+var _googleApi2 = _interopRequireDefault(_googleApi);
+
+var _savedYandexTranslation = require('./AjaxRequests/savedYandexTranslation');
+
+var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
+
+var _yandex = require('./Parse/yandex');
+
+var _yandex2 = _interopRequireDefault(_yandex);
+
+var _google = require('./Parse/google');
+
+var _google2 = _interopRequireDefault(_google);
+
+var _view = require('./view');
+
+var _view2 = _interopRequireDefault(_view);
+
 var _authentication = require('./authentication.js');
 
 var _authentication2 = _interopRequireDefault(_authentication);
+
+var _learningMachine = require('./learningMachine');
+
+var _learningMachine2 = _interopRequireDefault(_learningMachine);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -525,12 +984,14 @@ var Controller = function () {
         value: function getTranslation() {
             var word = document.getElementById('word').value;
             if (!word) return;
-            AjaxRequests.getWordFromServer(word).then(function (data) {
-                View.yandex(YandexParse.getData(data));
+            (0, _savedYandexTranslation2.default)(word).then(function (data) {
+                var parse = new _yandex2.default(data);
+                _view2.default.yandexTranslation(parse.getData());
             }, function (err) {
                 if (err.status === 404) {
-                    AjaxRequests.yandexApi(word).then(function (data) {
-                        View.yandex(YandexParse.getData(data));
+                    (0, _yandexApi2.default)(word).then(function (data) {
+                        var parse = new _yandex2.default(data);
+                        _view2.default.yandexTranslation(parse.getData());
                     });
                 }
             });
@@ -540,8 +1001,9 @@ var Controller = function () {
         value: function getMeaning() {
             var word = document.getElementById('word').value;
             if (!word) return;
-            AjaxRequests.googleApi(word).then(function (data) {
-                View.google(GoogleParse.getData(data));
+            (0, _googleApi2.default)(word).then(function (data) {
+                var parse = new _google2.default(data);
+                _view2.default.googleDefinition(parse.getData());
             });
         }
     }, {
@@ -561,247 +1023,39 @@ var Controller = function () {
     return Controller;
 }();
 
-var AjaxRequests = function () {
-    function AjaxRequests() {
-        _classCallCheck(this, AjaxRequests);
+var learningMachine = new _learningMachine2.default();
+learningMachine.getAllWords();
+
+window.onload = function () {
+
+    setTimeout(function () {
+        learningMachine.sendQuestion();
+        Controller.listenButtons();
+    }, 200);
+};
+
+},{"./AjaxRequests/googleApi":3,"./AjaxRequests/savedYandexTranslation":5,"./AjaxRequests/yandexApi":7,"./Parse/google":8,"./Parse/yandex":9,"./authentication.js":10,"./learningMachine":11,"./view":13,"whatwg-fetch":1}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Created by tup1tsa on 11.08.2016.
+ */
+var _class = function () {
+    function _class() {
+        _classCallCheck(this, _class);
     }
 
-    _createClass(AjaxRequests, null, [{
-        key: 'checkStatus',
-        value: function checkStatus(response) {
-            if (response.status >= 200 && response.status < 300) {
-                return response;
-            } else {
-                var error = new Error(response.statusText);
-                error.response = response;
-                throw error;
-            }
-        }
-    }, {
-        key: 'yandexApi',
-        value: function yandexApi(word) {
-            return new Promise(function (resolve) {
-                fetch('/learnWords/getTranslation', {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        word: word
-                    })
-                }).then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.text());
-                });
-            });
-        }
-    }, {
-        key: 'googleApi',
-        value: function googleApi(word) {
-            return new Promise(function (resolve) {
-                fetch('/learnWords/getMeaning', {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        word: word
-                    })
-                }).then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.text());
-                });
-            });
-        }
-    }, {
-        key: 'getWordFromServer',
-        value: function getWordFromServer(word) {
-            return new Promise(function (resolve, reject) {
-                fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/' + word + '.txt').then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.json());
-                }, function (err) {
-                    reject(err);
-                });
-            });
-        }
-    }, {
-        key: 'getWordList',
-        value: function getWordList() {
-            return new Promise(function (resolve, reject) {
-                fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/sortedWordsList.json').then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.json());
-                }, function (err) {
-                    reject(err);
-                });
-            });
-        }
-    }, {
-        key: 'checkAuth',
-        value: function checkAuth(data) {
-            return new Promise(function (resolve, reject) {
-                fetch('/auth', {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                }).then(AjaxRequests.checkStatus).then(function (response) {
-                    resolve(response.text());
-                }, function (err) {
-                    reject(err);
-                });
-            });
-        }
-    }]);
-
-    return AjaxRequests;
-}();
-
-var YandexParse = function () {
-    function YandexParse() {
-        _classCallCheck(this, YandexParse);
-    }
-
-    _createClass(YandexParse, null, [{
-        key: 'getData',
-        value: function getData(jsonData) {
-            if (jsonData.def.length === 0) return;
-            return jsonData.def.map(function (description) {
-                return {
-                    type: description.pos || '',
-                    transcription: description.ts ? '[' + description.ts + ']' : '',
-                    translations: description.tr.map(function (translation) {
-                        return {
-                            examples: YandexParse.transformExamples(translation.ex),
-                            synonyms: YandexParse.transformSynonyms(translation.syn),
-                            synonymsEn: YandexParse.transformSynonyms(translation.mean),
-                            translationType: translation.pos,
-                            translation: translation.text
-                        };
-                    })
-
-                };
-            });
-        }
-    }, {
-        key: 'transformExamples',
-        value: function transformExamples() {
-            var examples = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-
-            return examples.map(function (example) {
-                return example.text + ' - ' + example.tr[0].text;
-            });
-        }
-    }, {
-        key: 'transformSynonyms',
-        value: function transformSynonyms() {
-            var synonyms = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-
-            return synonyms.map(function (synonym) {
-                return synonym.text;
-            });
-        }
-    }, {
-        key: 'findCorrectAnswers',
-        value: function findCorrectAnswers(parsedWords) {
-            return parsedWords.map(function (word) {
-                return word.translations.map(function (translation) {
-                    return translation.translation.toLowerCase();
-                });
-            }).reduce(function (previousWords, currentWord) {
-                return previousWords.concat(currentWord);
-            }, []);
-        }
-    }]);
-
-    return YandexParse;
-}();
-
-var GoogleParse = function () {
-    function GoogleParse() {
-        _classCallCheck(this, GoogleParse);
-    }
-
-    _createClass(GoogleParse, null, [{
-        key: 'getData',
-        value: function getData(rawData) {
-            return {
-                definitionLists: GoogleParse.findDefinitionLists(GoogleParse.findDefinitionChunks(rawData)),
-                webDefinitionLists: GoogleParse.findWebDefinitionLists(GoogleParse.findWebDefinitionChunk(rawData)),
-                grammar: GoogleParse.findGrammar(rawData)
-            };
-        }
-    }, {
-        key: 'findDefinitionChunks',
-        value: function findDefinitionChunks(rawData) {
-            var regExp = /<b>(.*)\n[\s\S]*?<\/[\s\S]*?<div class=std style="padding-left:40px">([\s\S]*?)(<div id="forEmbed">|<hr>)/g;
-            var regExpResult = void 0;
-            var definitionsChunks = [];
-            while ((regExpResult = regExp.exec(rawData)) !== null) {
-                definitionsChunks.push({
-                    typeOfWord: regExpResult[1],
-                    body: regExpResult[2]
-                });
-            }
-            return definitionsChunks;
-        }
-    }, {
-        key: 'findDefinitionLists',
-        value: function findDefinitionLists(chunks) {
-            return chunks.map(function (chunk) {
-                var list = chunk.body.split(/<li style="list-style:decimal">/g).slice(1).map(function (listValue) {
-                    return GoogleParse.deleteUnnecessaryRow(listValue);
-                });
-                return {
-                    typeOfWord: chunk.typeOfWord,
-                    list: list
-                };
-            });
-        }
-    }, {
-        key: 'deleteUnnecessaryRow',
-        value: function deleteUnnecessaryRow(listValue) {
-            var regExp = /color:#767676/;
-            if (listValue.match(regExp)) {
-                return listValue;
-            } else {
-                return listValue.replace(/<div[\s\S]*<\/div>/, '');
-            }
-        }
-    }, {
-        key: 'findWebDefinitionChunk',
-        value: function findWebDefinitionChunk(rawData) {
-            var regExp = /Web Definitions[\s\S]*<\/ol>/g;
-            return rawData.match(regExp)[0];
-        }
-    }, {
-        key: 'findWebDefinitionLists',
-        value: function findWebDefinitionLists(chunk) {
-            var webList = [];
-            var regExp = /<li style="list-style:decimal; margin-bottom:10px;">([\s\S]*?)<\/li>/g;
-            var regExpResult = void 0;
-            while ((regExpResult = regExp.exec(chunk)) !== null) {
-                webList.push(regExpResult[1]);
-            }
-            return webList;
-        }
-    }, {
-        key: 'findGrammar',
-        value: function findGrammar(rawData) {
-            var regExp = /<span style="color:#767676">([\s\S]*?)<\/span>/;
-            return rawData.match(regExp)[1].slice(0, -2);
-        }
-    }]);
-
-    return GoogleParse;
-}();
-
-var View = function () {
-    function View() {
-        _classCallCheck(this, View);
-    }
-
-    _createClass(View, null, [{
-        key: 'yandex',
-        value: function yandex(words) {
+    _createClass(_class, null, [{
+        key: 'yandexTranslation',
+        value: function yandexTranslation(words) {
             document.getElementById('translationBox').innerHTML = words.map(function (word) {
                 return '<br><span class="ital"><b>' + word.type + '</b></span> ' + word.transcription + ' ' + word.translations.map(function (translation, index) {
                     var innerHTML = '<br>' + (index + 1) + ') ' + translation.translation;
@@ -819,8 +1073,8 @@ var View = function () {
             }) + '<hr>';
         }
     }, {
-        key: 'google',
-        value: function google(data) {
+        key: 'googleDefinition',
+        value: function googleDefinition(data) {
             var grammar = '<span class="googleGrammar"><b>Grammar:</b> ' + data.grammar + '</span><br>';
             var definitions = data.definitionLists.map(function (chunk) {
                 return '<b>' + chunk.typeOfWord + '</b><br><ol>\n                ' + chunk.list.map(function (definition) {
@@ -843,96 +1097,34 @@ var View = function () {
             var audio = new Audio('audio/whoosh.mp3');
             audio.play();
         }
-    }, {
-        key: 'showUserInfo',
-        value: function showUserInfo() {
-            var auth = new _authentication2.default();
-            var data = auth.findLocalAuthData();
+
+        /*static showUserInfo () {
+            let auth = new AuthClass();
+            const data = auth.findLocalAuthData();
             if (data) {
-                AjaxRequests.checkAuth(data).then(function () {
-                    document.getElementById('authentication').style.display = 'none';
-                    document.querySelector('#authentication .notification').style.display = 'none';
-                    document.getElementById('profileData').style.display = 'block';
-                    document.getElementById('profileName').value = auth.name;
-                }, function (err) {
-                    var notificationElem = document.querySelector('#authentication .notification');
-                    notificationElem.style.display = 'block';
-                    console.log(err);
-                    //notificationElem.textContent = err
-                });
+                AjaxRequests.checkAuth(data)
+                    .then(() => {
+                        document.getElementById('authentication').style.display = 'none';
+                        document.querySelector('#authentication .notification').style.display = 'none';
+                        document.getElementById('profileData').style.display = 'block';
+                        document.getElementById('profileName').value = auth.name
+                    }, err => {
+                        let notificationElem = document.querySelector('#authentication .notification');
+                        notificationElem.style.display = 'block';
+                        console.log(err);
+                        //notificationElem.textContent = err
+                    })
             }
-        }
+        }*/
+
     }]);
 
-    return View;
+    return _class;
 }();
 
-var LearnMachine = function () {
-    function LearnMachine() {
-        _classCallCheck(this, LearnMachine);
+exports.default = _class;
 
-        this.correctAnswers = [];
-        this.allWords = [];
-    }
-
-    _createClass(LearnMachine, [{
-        key: 'getAllWords',
-        value: function getAllWords() {
-            var _this = this;
-
-            AjaxRequests.getWordList().then(function (data) {
-                _this.allWords = data;
-            }, function (err) {
-                throw err;
-            });
-        }
-    }, {
-        key: 'checkAnswer',
-        value: function checkAnswer() {
-            var userAnswer = document.getElementById('answerWord').value;
-            if (this.correctAnswers.indexOf(userAnswer) !== -1) {
-                console.log('answer is correct');
-            } else {
-                console.log('answer is incorrect');
-            }
-        }
-    }, {
-        key: 'sendQuestion',
-        value: function sendQuestion() {
-            var wordNumber = Math.ceil(Math.random() * 1000);
-            var word = this.allWords[wordNumber].word;
-            this.getAnswer(word);
-            View.showQuestion(word);
-        }
-    }, {
-        key: 'getAnswer',
-        value: function getAnswer(word) {
-            var _this2 = this;
-
-            AjaxRequests.getWordFromServer(word).then(function (data) {
-                _this2.correctAnswers = YandexParse.findCorrectAnswers(YandexParse.getData(data));
-            }, function (err) {
-                throw err;
-            });
-        }
-    }]);
-
-    return LearnMachine;
-}();
-
-var learningMachine = new LearnMachine();
-learningMachine.getAllWords();
-
-window.onload = function () {
-    View.showUserInfo();
-
-    setTimeout(function () {
-        learningMachine.sendQuestion();
-        Controller.listenButtons();
-    }, 200);
-};
-
-},{"./authentication.js":2,"whatwg-fetch":1}]},{},[3])
+},{}]},{},[12])
 
 
 //# sourceMappingURL=main.compiled.js.map
