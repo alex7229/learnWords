@@ -440,15 +440,15 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _statusHandling = require('./statusHandling');
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
 
-var _statusHandling2 = _interopRequireDefault(_statusHandling);
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function () {
     return new Promise(function (resolve, reject) {
-        fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/sortedWordsList.json').then(_statusHandling2.default).then(function (response) {
+        fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/sortedWordsList.json').then(_fetchStatusHangling2.default).then(function (response) {
             resolve(response.json());
         }, function (err) {
             reject(err);
@@ -458,16 +458,16 @@ exports.default = function () {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"./statusHandling":6}],3:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":12}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _statusHandling = require('./statusHandling');
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
 
-var _statusHandling2 = _interopRequireDefault(_statusHandling);
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -481,7 +481,7 @@ exports.default = function (word) {
             body: JSON.stringify({
                 word: word
             })
-        }).then(_statusHandling2.default).then(function (response) {
+        }).then(_fetchStatusHangling2.default).then(function (response) {
             resolve(response.text());
         });
     });
@@ -489,16 +489,16 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"./statusHandling":6}],4:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":12}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _statusHandling = require('./statusHandling');
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
 
-var _statusHandling2 = _interopRequireDefault(_statusHandling);
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -510,7 +510,7 @@ exports.default = function (encryptedLoginPassword) {
                 'Content-Type': 'application/json',
                 'authorization': encryptedLoginPassword
             }
-        }).then(_statusHandling2.default).then(function (response) {
+        }).then(_fetchStatusHangling2.default).then(function (response) {
             resolve(response.text());
         }, function (err) {
             reject(err);
@@ -520,22 +520,58 @@ exports.default = function (encryptedLoginPassword) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"./statusHandling":6}],5:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":12}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _statusHandling = require('./statusHandling');
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
 
-var _statusHandling2 = _interopRequireDefault(_statusHandling);
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (encryptedLoginPassword, email, secretQuestion, secretAnswer) {
+    return new Promise(function (resolve, reject) {
+        fetch('/auth/registration', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': encryptedLoginPassword
+            },
+            body: JSON.stringify({
+                email: email,
+                secretQuestion: secretQuestion,
+                secretAnswer: secretAnswer
+            })
+        }).then(_fetchStatusHangling2.default).then(function (response) {
+            resolve(response.text());
+        }, function (err) {
+            reject(err);
+        });
+    });
+}; /**
+    * Created by tup1tsa on 11.08.2016.
+    */
+
+},{"../Utils/fetchStatusHangling":12}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
+
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function (word) {
     return new Promise(function (resolve, reject) {
-        fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/' + word + '.txt').then(_statusHandling2.default).then(function (response) {
+        fetch('http://tup1tsa.bounceme.net/learnWords/wordsLists/yandexTranslations/' + word + '.txt').then(_fetchStatusHangling2.default).then(function (response) {
             resolve(response.json());
         }, function (err) {
             reject(err);
@@ -545,36 +581,16 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"./statusHandling":6}],6:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-/**
- * Created by tup1tsa on 11.08.2016.
- */
-exports.default = function (response) {
-    if (response.status >= 200 && response.status < 300) {
-        return response;
-    } else {
-        var error = new Error(response.statusText);
-        error.response = response;
-        throw error;
-    }
-};
-
-},{}],7:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":12}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _statusHandling = require('./statusHandling');
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
 
-var _statusHandling2 = _interopRequireDefault(_statusHandling);
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -588,7 +604,7 @@ exports.default = function (word) {
             body: JSON.stringify({
                 word: word
             })
-        }).then(_statusHandling2.default).then(function (response) {
+        }).then(_fetchStatusHangling2.default).then(function (response) {
             resolve(response.text());
         });
     });
@@ -596,7 +612,192 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"./statusHandling":6}],8:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":12}],8:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 08.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _login = require('../AjaxRequests/login');
+
+var _login2 = _interopRequireDefault(_login);
+
+var _registration = require('../AjaxRequests/registration');
+
+var _registration2 = _interopRequireDefault(_registration);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _class = function () {
+    function _class() {
+        _classCallCheck(this, _class);
+    }
+
+    _createClass(_class, [{
+        key: 'checkUserInfo',
+        value: function checkUserInfo(encryptedLoginPassword) {
+            var authData = this.findLocalAuthData();
+            if (authData) {
+                var encryptedData = this.encryptData(authData);
+                (0, _login2.default)(encryptedLoginPassword);
+            } else {
+                throw new Error('U have not declared password or login');
+            }
+        }
+    }, {
+        key: 'findLocalAuthData',
+        value: function findLocalAuthData() {
+            var name = localStorage.getItem('authName');
+            var password = localStorage.getItem('authPassword');
+            if (!(name && password)) {
+                name = document.getElementById('login').value;
+                password = document.getElementById('password').value;
+            }
+            if (name && password) {
+                return {
+                    name: name,
+                    password: password
+                };
+            }
+        }
+    }, {
+        key: 'encryptData',
+        value: function encryptData(userInfo) {
+            return btoa(userInfo.name + ':' + userInfo.password);
+        }
+    }, {
+        key: 'gatherUserInfo',
+        value: function gatherUserInfo() {
+            var name = document.getElementById('login').value;
+            var password = document.getElementById('password').value;
+            var checkPassword = document.getElementById('repeatedPassword').value;
+            var email = document.getElementById('email').value;
+            var secretQuestion = document.getElementById('secretQuestion').value;
+            var secretAnswer = document.getElementById('secretAnswer').value;
+            if (!name || !password || !email || !secretQuestion || !secretAnswer) {
+                throw new Error('All fields required');
+            }
+            if (password !== checkPassword) {
+                throw new Error('Passwords are different');
+            }
+            var encryptedAuthorizationData = this.encryptData({
+                name: name,
+                password: password
+            });
+            return {
+                encryptedAuthorizationData: encryptedAuthorizationData,
+                email: email,
+                secretQuestion: secretQuestion,
+                secretAnswer: secretAnswer
+            };
+        }
+    }]);
+
+    return _class;
+}();
+
+exports.default = _class;
+
+},{"../AjaxRequests/login":4,"../AjaxRequests/registration":5}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 11.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _getWordsList = require('../AjaxRequests/getWordsList');
+
+var _getWordsList2 = _interopRequireDefault(_getWordsList);
+
+var _savedYandexTranslation = require('../AjaxRequests/savedYandexTranslation');
+
+var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
+
+var _yandex = require('../Parse/yandex');
+
+var _yandex2 = _interopRequireDefault(_yandex);
+
+var _learnMachineView = require('../View/learnMachineView');
+
+var _learnMachineView2 = _interopRequireDefault(_learnMachineView);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _class = function () {
+    function _class() {
+        _classCallCheck(this, _class);
+
+        this.correctAnswers = [];
+        this.allWords = [];
+    }
+
+    _createClass(_class, [{
+        key: 'getAllWords',
+        value: function getAllWords() {
+            var _this = this;
+
+            (0, _getWordsList2.default)().then(function (data) {
+                _this.allWords = data;
+            }, function (err) {
+                throw err;
+            });
+        }
+    }, {
+        key: 'checkAnswer',
+        value: function checkAnswer() {
+            var userAnswer = document.getElementById('answerWord').value;
+            if (this.correctAnswers.indexOf(userAnswer) !== -1) {
+                console.log('answer is correct');
+            } else {
+                console.log('answer is incorrect');
+            }
+        }
+    }, {
+        key: 'sendQuestion',
+        value: function sendQuestion() {
+            var wordNumber = Math.ceil(Math.random() * 1000);
+            var word = this.allWords[wordNumber].word;
+            this.getAnswer(word);
+            _learnMachineView2.default.showQuestion(word);
+        }
+    }, {
+        key: 'getAnswer',
+        value: function getAnswer(word) {
+            var _this2 = this;
+
+            (0, _savedYandexTranslation2.default)(word).then(function (data) {
+                var parse = new _yandex2.default(data);
+                _this2.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
+            }, function (err) {
+                throw err;
+            });
+        }
+    }]);
+
+    return _class;
+}();
+
+// todo - view is changing by model, not controller.
+
+
+exports.default = _class;
+
+},{"../AjaxRequests/getWordsList":2,"../AjaxRequests/savedYandexTranslation":6,"../Parse/yandex":11,"../View/learnMachineView":14}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -695,7 +896,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -775,62 +976,77 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+/**
+ * Created by tup1tsa on 11.08.2016.
+ */
+exports.default = function (response) {
+    if (response.status >= 200 && response.status < 300) {
+        return response;
+    } else {
+        var error = new Error(response.statusText);
+        error.response = response;
+        throw error;
+    }
+};
+
+},{}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.showRegistrationBlock = showRegistrationBlock;
+exports.showNotification = showNotification;
+/**
+ * Created by tup1tsa on 12.08.2016.
+ */
+function showRegistrationBlock() {
+    document.querySelector('#authDefault div, #profileData, .notification').style.display = 'none';
+    document.getElementById('registrationBlock').style.display = 'block';
+}
+
+function showNotification(text) {
+    var selector = '#authentication .notification';
+    document.querySelector(selector).innerHTML = '<p>' + text + '</p>';
+    document.querySelector(selector).style.display = 'block';
+}
+
+},{}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 08.08.2016.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
-
-
-var _login = require('./AjaxRequests/login');
-
-var _login2 = _interopRequireDefault(_login);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+ * Created by tup1tsa on 12.08.2016.
+ */
 var _class = function () {
     function _class() {
         _classCallCheck(this, _class);
     }
 
-    _createClass(_class, [{
-        key: 'checkUserInfo',
-        value: function checkUserInfo(encryptedLoginPassword) {
-            var authData = this.findLocalAuthData();
-            if (authData) {
-                var encryptedData = this.encryptData(authData);
-                (0, _login2.default)(encryptedLoginPassword);
-            } else {
-                throw new Error('U have not declared password or login');
-            }
+    _createClass(_class, null, [{
+        key: 'showQuestion',
+        value: function showQuestion(word) {
+            document.getElementById('questionedWord').textContent = word;
         }
     }, {
-        key: 'findLocalAuthData',
-        value: function findLocalAuthData() {
-            var name = localStorage.getItem('authName');
-            var password = localStorage.getItem('authPassword');
-            if (!(name && password)) {
-                name = document.getElementById('login').value;
-                password = document.getElementById('password').value;
-            }
-            if (name && password) {
-                return {
-                    name: name,
-                    password: password
-                };
-            }
-        }
-    }, {
-        key: 'encryptData',
-        value: function encryptData(userInfo) {
-            return btoa(userInfo.name + ':' + userInfo.password);
+        key: 'playCorrectAnswerSound',
+        value: function playCorrectAnswerSound() {
+            var audio = new Audio('audio/whoosh.mp3');
+            audio.play();
         }
     }]);
 
@@ -839,98 +1055,49 @@ var _class = function () {
 
 exports.default = _class;
 
-},{"./AjaxRequests/login":4}],11:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 11.08.2016.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
-
-
-var _getWordsList = require('./AjaxRequests/getWordsList');
-
-var _getWordsList2 = _interopRequireDefault(_getWordsList);
-
-var _savedYandexTranslation = require('./AjaxRequests/savedYandexTranslation');
-
-var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
-
-var _yandex = require('./Parse/yandex');
-
-var _yandex2 = _interopRequireDefault(_yandex);
-
-var _view = require('./view');
-
-var _view2 = _interopRequireDefault(_view);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _class = function () {
-    function _class() {
-        _classCallCheck(this, _class);
-
-        this.correctAnswers = [];
-        this.allWords = [];
-    }
-
-    _createClass(_class, [{
-        key: 'getAllWords',
-        value: function getAllWords() {
-            var _this = this;
-
-            (0, _getWordsList2.default)().then(function (data) {
-                _this.allWords = data;
-            }, function (err) {
-                throw err;
-            });
-        }
-    }, {
-        key: 'checkAnswer',
-        value: function checkAnswer() {
-            var userAnswer = document.getElementById('answerWord').value;
-            if (this.correctAnswers.indexOf(userAnswer) !== -1) {
-                console.log('answer is correct');
-            } else {
-                console.log('answer is incorrect');
+exports.yandex = yandex;
+exports.google = google;
+/**
+ * Created by tup1tsa on 12.08.2016.
+ */
+function yandex(words) {
+    document.getElementById('translationBox').innerHTML = words.map(function (word) {
+        return '<br><span class="ital"><b>' + word.type + '</b></span> ' + word.transcription + ' ' + word.translations.map(function (translation, index) {
+            var innerHTML = '<br>' + (index + 1) + ') ' + translation.translation;
+            if (translation.examples.length !== 0) {
+                innerHTML += '. <br><span class="tabbed">Examples:</span> ' + translation.examples.join('; ');
             }
-        }
-    }, {
-        key: 'sendQuestion',
-        value: function sendQuestion() {
-            var wordNumber = Math.ceil(Math.random() * 1000);
-            var word = this.allWords[wordNumber].word;
-            this.getAnswer(word);
-            _view2.default.showQuestion(word);
-        }
-    }, {
-        key: 'getAnswer',
-        value: function getAnswer(word) {
-            var _this2 = this;
+            if (translation.synonyms.length !== 0) {
+                innerHTML += '. <br><span class="tabbed">Synonyms:</span> ' + translation.synonyms.join('; ');
+            }
+            if (translation.synonymsEn.length !== 0) {
+                innerHTML += '. <br><span class="tabbed">Synonyms (en):</span> ' + translation.synonymsEn.join('; ');
+            }
+            return innerHTML;
+        }).join('');
+    }) + '<hr>';
+}
 
-            (0, _savedYandexTranslation2.default)(word).then(function (data) {
-                var parse = new _yandex2.default(data);
-                _this2.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
-            }, function (err) {
-                throw err;
-            });
-        }
-    }]);
+function google(data) {
+    var grammar = '<span class="googleGrammar"><b>Grammar:</b> ' + data.grammar + '</span><br>';
+    var definitions = data.definitionLists.map(function (chunk) {
+        return '<b>' + chunk.typeOfWord + '</b><br><ol>\n                ' + chunk.list.map(function (definition) {
+            return '<li>' + definition + '</li>';
+        }).join('') + '</ol><hr>';
+    });
+    var webDefinition = '<b>Web Results:</b><ol>\n            ' + data.webDefinitionLists.map(function (row) {
+        return '<li>' + row + '</li>';
+    }).join('') + '</ol>';
+    document.getElementById('dictionaryBox').innerHTML = grammar + definitions + webDefinition;
+}
 
-    return _class;
-}();
-
-// todo - view is changing by model, not controller.
-
-
-exports.default = _class;
-
-},{"./AjaxRequests/getWordsList":2,"./AjaxRequests/savedYandexTranslation":5,"./Parse/yandex":9,"./view":13}],12:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -947,6 +1114,10 @@ var _savedYandexTranslation = require('./AjaxRequests/savedYandexTranslation');
 
 var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
 
+var _registration = require('./AjaxRequests/registration');
+
+var _registration2 = _interopRequireDefault(_registration);
+
 var _yandex = require('./Parse/yandex');
 
 var _yandex2 = _interopRequireDefault(_yandex);
@@ -955,17 +1126,17 @@ var _google = require('./Parse/google');
 
 var _google2 = _interopRequireDefault(_google);
 
-var _view = require('./view');
-
-var _view2 = _interopRequireDefault(_view);
-
-var _authentication = require('./authentication.js');
+var _authentication = require('./Model/authentication.js');
 
 var _authentication2 = _interopRequireDefault(_authentication);
 
-var _learningMachine = require('./learningMachine');
+var _learningMachine = require('./Model/learningMachine');
 
 var _learningMachine2 = _interopRequireDefault(_learningMachine);
+
+var _translations = require('./View/translations');
+
+var _authForm = require('./View/authForm');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -986,12 +1157,12 @@ var Controller = function () {
             if (!word) return;
             (0, _savedYandexTranslation2.default)(word).then(function (data) {
                 var parse = new _yandex2.default(data);
-                _view2.default.yandexTranslation(parse.getData());
+                (0, _translations.yandex)(parse.getData());
             }, function (err) {
                 if (err.status === 404) {
                     (0, _yandexApi2.default)(word).then(function (data) {
                         var parse = new _yandex2.default(data);
-                        _view2.default.yandexTranslation(parse.getData());
+                        (0, _translations.yandex)(parse.getData());
                     });
                 }
             });
@@ -1003,8 +1174,30 @@ var Controller = function () {
             if (!word) return;
             (0, _googleApi2.default)(word).then(function (data) {
                 var parse = new _google2.default(data);
-                _view2.default.googleDefinition(parse.getData());
+                (0, _translations.google)(parse.getData());
             });
+        }
+    }, {
+        key: 'register',
+        value: function register() {
+            var auth = new _authentication2.default();
+            var errors = false;
+            try {
+                var userInfo = auth.gatherUserInfo();
+            } catch (err) {
+                (0, _authForm.showNotification)(err.message);
+                errors = true;
+            }
+            if (errors) return;
+            (0, _registration2.default)(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer).then(function (response) {
+                console.log(response);
+            });
+        }
+    }, {
+        key: 'login',
+        value: function login() {
+            var auth = new _authentication2.default();
+            auth.checkUserInfo();
         }
     }, {
         key: 'listenButtons',
@@ -1013,10 +1206,9 @@ var Controller = function () {
             document.getElementById("getTranslation").onclick = Controller.getTranslation;
             document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
             document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
-            document.getElementById('loginBtn').onclick = function () {
-                var auth = new _authentication2.default();
-                auth.checkUserInfo();
-            };
+            document.getElementById('loginBtn').onclick = Controller.login;
+            document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
+            document.getElementById('endRegistration').onclick = Controller.register;
         }
     }]);
 
@@ -1034,97 +1226,7 @@ window.onload = function () {
     }, 200);
 };
 
-},{"./AjaxRequests/googleApi":3,"./AjaxRequests/savedYandexTranslation":5,"./AjaxRequests/yandexApi":7,"./Parse/google":8,"./Parse/yandex":9,"./authentication.js":10,"./learningMachine":11,"./view":13,"whatwg-fetch":1}],13:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * Created by tup1tsa on 11.08.2016.
- */
-var _class = function () {
-    function _class() {
-        _classCallCheck(this, _class);
-    }
-
-    _createClass(_class, null, [{
-        key: 'yandexTranslation',
-        value: function yandexTranslation(words) {
-            document.getElementById('translationBox').innerHTML = words.map(function (word) {
-                return '<br><span class="ital"><b>' + word.type + '</b></span> ' + word.transcription + ' ' + word.translations.map(function (translation, index) {
-                    var innerHTML = '<br>' + (index + 1) + ') ' + translation.translation;
-                    if (translation.examples.length !== 0) {
-                        innerHTML += '. <br><span class="tabbed">Examples:</span> ' + translation.examples.join('; ');
-                    }
-                    if (translation.synonyms.length !== 0) {
-                        innerHTML += '. <br><span class="tabbed">Synonyms:</span> ' + translation.synonyms.join('; ');
-                    }
-                    if (translation.synonymsEn.length !== 0) {
-                        innerHTML += '. <br><span class="tabbed">Synonyms (en):</span> ' + translation.synonymsEn.join('; ');
-                    }
-                    return innerHTML;
-                }).join('');
-            }) + '<hr>';
-        }
-    }, {
-        key: 'googleDefinition',
-        value: function googleDefinition(data) {
-            var grammar = '<span class="googleGrammar"><b>Grammar:</b> ' + data.grammar + '</span><br>';
-            var definitions = data.definitionLists.map(function (chunk) {
-                return '<b>' + chunk.typeOfWord + '</b><br><ol>\n                ' + chunk.list.map(function (definition) {
-                    return '<li>' + definition + '</li>';
-                }).join('') + '</ol><hr>';
-            });
-            var webDefinition = '<b>Web Results:</b><ol>\n            ' + data.webDefinitionLists.map(function (row) {
-                return '<li>' + row + '</li>';
-            }).join('') + '</ol>';
-            document.getElementById('dictionaryBox').innerHTML = grammar + definitions + webDefinition;
-        }
-    }, {
-        key: 'showQuestion',
-        value: function showQuestion(word) {
-            document.getElementById('questionedWord').textContent = word;
-        }
-    }, {
-        key: 'playCorrectAnswerSound',
-        value: function playCorrectAnswerSound() {
-            var audio = new Audio('audio/whoosh.mp3');
-            audio.play();
-        }
-
-        /*static showUserInfo () {
-            let auth = new AuthClass();
-            const data = auth.findLocalAuthData();
-            if (data) {
-                AjaxRequests.checkAuth(data)
-                    .then(() => {
-                        document.getElementById('authentication').style.display = 'none';
-                        document.querySelector('#authentication .notification').style.display = 'none';
-                        document.getElementById('profileData').style.display = 'block';
-                        document.getElementById('profileName').value = auth.name
-                    }, err => {
-                        let notificationElem = document.querySelector('#authentication .notification');
-                        notificationElem.style.display = 'block';
-                        console.log(err);
-                        //notificationElem.textContent = err
-                    })
-            }
-        }*/
-
-    }]);
-
-    return _class;
-}();
-
-exports.default = _class;
-
-},{}]},{},[12])
+},{"./AjaxRequests/googleApi":3,"./AjaxRequests/registration":5,"./AjaxRequests/savedYandexTranslation":6,"./AjaxRequests/yandexApi":7,"./Model/authentication.js":8,"./Model/learningMachine":9,"./Parse/google":10,"./Parse/yandex":11,"./View/authForm":13,"./View/translations":15,"whatwg-fetch":1}]},{},[16])
 
 
 //# sourceMappingURL=main.compiled.js.map

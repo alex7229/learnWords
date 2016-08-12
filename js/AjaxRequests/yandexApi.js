@@ -1,7 +1,7 @@
 /**
  * Created by tup1tsa on 11.08.2016.
  */
-import checkStatus from './statusHandling';
+import checkStatus from '../Utils/fetchStatusHangling';
 
 export default (word) => {
     return new Promise(resolve => {

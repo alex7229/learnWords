@@ -3,11 +3,13 @@ require('whatwg-fetch');
 import yandexApi from './AjaxRequests/yandexApi'
 import googleApi from './AjaxRequests/googleApi'
 import savedYandexTranslation from './AjaxRequests/savedYandexTranslation'
+import fetchRegistration from './AjaxRequests/registration'
 import YandexParse from './Parse/yandex'
 import GoogleParse from './Parse/google'
-import View from './view'
-import Auth from './authentication.js'
-import LearnMachine from './learningMachine'
+import Auth from './Model/authentication.js'
+import LearnMachine from './Model/learningMachine'
+import {yandex as yandexView, google as googleView} from './View/translations'
+import {showRegistrationBlock, showNotification as showAuthNotification} from './View/authForm'
 
 
 
@@ -20,13 +22,13 @@ import LearnMachine from './learningMachine'
         savedYandexTranslation(word)
             .then(data => {
                 const parse = new YandexParse(data);
-                View.yandexTranslation(parse.getData());
+                yandexView(parse.getData());
             }, err => {
                 if (err.status === 404) {
                     yandexApi(word)
                         .then(data => {
                             const parse = new YandexParse(data);
-                            View.yandexTranslation(parse.getData());
+                            yandexView(parse.getData());
                         })
                 }
             })
@@ -38,19 +40,40 @@ import LearnMachine from './learningMachine'
         googleApi(word)
             .then(data => {
                 const parse = new GoogleParse(data);
-                View.googleDefinition(parse.getData());
+                googleView(parse.getData());
             })
     }
+     
+     static register () {
+         const auth = new Auth();
+         let errors = false;
+         try {
+             var userInfo = auth.gatherUserInfo()
+         } catch (err) {
+             showAuthNotification(err.message);
+             errors  = true
+         }
+         if (errors) return;
+         fetchRegistration(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer)
+             .then(response => {
+                 console.log(response)
+             })
+
+     }
+     
+     static login () {
+         let auth = new Auth();
+         auth.checkUserInfo()
+     }
 
     static listenButtons () {
         document.getElementById("getMeaning").onclick = Controller.getMeaning;
         document.getElementById("getTranslation").onclick  = Controller.getTranslation;
         document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
         document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
-        document.getElementById('loginBtn').onclick = () => {
-            let auth = new Auth();
-            auth.checkUserInfo()
-        }
+        document.getElementById('loginBtn').onclick = Controller.login;
+        document.getElementById('startRegistration').onclick = showRegistrationBlock;
+        document.getElementById('endRegistration').onclick = Controller.register;
     }
 
 }

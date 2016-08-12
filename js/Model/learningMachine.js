@@ -1,10 +1,10 @@
 /**
  * Created by tup1tsa on 11.08.2016.
  */
-import getWordsList from './AjaxRequests/getWordsList'
-import getSavedYandexWordTranslation from './AjaxRequests/savedYandexTranslation'
-import YandexParse from './Parse/yandex'
-import View from './view'
+import getWordsList from '../AjaxRequests/getWordsList'
+import getSavedYandexWordTranslation from '../AjaxRequests/savedYandexTranslation'
+import YandexParse from '../Parse/yandex'
+import View from '../View/learnMachineView'
 
 export default class  {
 
