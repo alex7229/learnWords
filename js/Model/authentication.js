@@ -9,8 +9,7 @@ export default class {
     checkUserInfo (encryptedLoginPassword) {
         const authData = this.findLocalAuthData();
         if (authData) {
-            const encryptedData = this.encryptData(authData);
-            login(encryptedLoginPassword)
+            return this.encryptData(authData);
         } else {
             throw new Error('U have not declared password or login')
         }

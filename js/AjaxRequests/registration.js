@@ -20,8 +20,9 @@ export default (encryptedLoginPassword, email, secretQuestion, secretAnswer) => 
             .then(checkStatus)
             .then(response => {
                 resolve(response.text())
-            }, err => {
-                reject(err)
+            })
+            .catch(err => {
+                reject (err)
             })
     })
 }

@@ -4,12 +4,13 @@ import yandexApi from './AjaxRequests/yandexApi'
 import googleApi from './AjaxRequests/googleApi'
 import savedYandexTranslation from './AjaxRequests/savedYandexTranslation'
 import fetchRegistration from './AjaxRequests/registration'
+import fetchLogin from './AjaxRequests/login'
 import YandexParse from './Parse/yandex'
 import GoogleParse from './Parse/google'
 import Auth from './Model/authentication.js'
 import LearnMachine from './Model/learningMachine'
 import {yandex as yandexView, google as googleView} from './View/translations'
-import {showRegistrationBlock, showNotification as showAuthNotification} from './View/authForm'
+import {showRegistrationBlock, showNotification, showUserInfoBlock} from './View/authForm'
 
 
 
@@ -50,20 +51,30 @@ import {showRegistrationBlock, showNotification as showAuthNotification} from '.
          try {
              var userInfo = auth.gatherUserInfo()
          } catch (err) {
-             showAuthNotification(err.message);
+             showNotification(err.message, 'red');
              errors  = true
          }
          if (errors) return;
          fetchRegistration(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer)
-             .then(response => {
-                 console.log(response)
+             .then(() => {
+                 showUserInfoBlock(auth.findLocalAuthData().name)
+             }, err => {
+                 showNotification(err.message, 'red');
              })
-
      }
      
      static login () {
-         let auth = new Auth();
-         auth.checkUserInfo()
+         const auth = new Auth();
+         let errors = false;
+         try {
+             auth.checkUserInfo()
+         } catch (err) {
+             errors = true;
+             showNotification(err.message, 'red')
+         }
+         if (errors) return;
+
+
      }
 
     static listenButtons () {
