@@ -2,14 +2,14 @@
  * Created by tup1tsa on 12.08.2016.
  */
 export function showRegistrationBlock () {
-    document.querySelector('#authDefault div, #profileData, #authentication .notification').style.display = 'none';
-    document.getElementById('registrationBlock').style.display = 'block'
+    hideAll();
+    display(['#authDefault', '#loginBlock', '#passwordBlock', '#registration']);
 }
 
 export function showUserInfoBlock(profileName) {
-    hide(['#authDefault div','#authentication .notification', '#registrationBLock']);
-    display(['#profileData']);
-    document.getElementById('profileName').innerText = profileName
+    hideAll();
+    document.getElementById('profileName').innerText = profileName;
+    display(['profileData'])
 }
 
 export function showNotification (text, color = 'black') {
@@ -19,15 +19,24 @@ export function showNotification (text, color = 'black') {
     elem.style.color = color;
 }
 
-function display(selectors) {
-    selectors.map(selector => {
-        document.querySelector(selector).style.display = 'block'
-    })
+export function showLogin () {
+    hideAll();
+    display(['#loginBlock', '#passwordBlock', '#buttonsBlock', '#authDefault'])
 }
 
-function hide (selectors) {
-    selectors.map(selector => {
-        console.log(selector);
-        document.querySelector(selector).style.display = 'none'
-    })
+export function logOut () {
+    display(['#authDefault', '#authDefault div']);
+    hide(['#registration', '#profileData', '#authentication .notification'])
+}
+
+function display(...selectors) {
+    document.querySelectorAll(selectors).style.display = 'block'
+}
+
+function hide (...selectors) {
+    document.querySelectorAll(selectors).style.display = 'none'
+}
+
+export function hideAll () {
+    document.getElementsByClassName('auth').style.display = 'none'
 }

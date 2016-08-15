@@ -29,8 +29,8 @@ html, body {
 }
 #authentication {
     float: right;
-    width: 250px
+    width: 270px
 }
-#profileData, .notification, #registrationBlock {
+.auth {
     display: none
 }

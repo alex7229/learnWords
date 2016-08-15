@@ -10,7 +10,7 @@ import GoogleParse from './Parse/google'
 import Auth from './Model/authentication.js'
 import LearnMachine from './Model/learningMachine'
 import {yandex as yandexView, google as googleView} from './View/translations'
-import {showRegistrationBlock, showNotification, showUserInfoBlock} from './View/authForm'
+import {showRegistrationBlock, showNotification, showUserInfoBlock, showLogin, logOut as viewLogOut, hideAll} from './View/authForm'
 
 
 
@@ -57,24 +57,49 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock} from './View
          if (errors) return;
          fetchRegistration(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer)
              .then(() => {
-                 showUserInfoBlock(auth.findLocalAuthData().name)
+                 const userInfo = auth.findLocalAuthData();
+                 auth.saveCredentials(userInfo.name, userInfo.password);
+                 showUserInfoBlock(userInfo.name)
              }, err => {
                  showNotification(err.message, 'red');
              })
      }
      
-     static login () {
+     static login (notificationOn) {
          const auth = new Auth();
          let errors = false;
          try {
-             auth.checkUserInfo()
+             var userInfo = auth.findLocalAuthData()
          } catch (err) {
              errors = true;
-             showNotification(err.message, 'red')
+             if (notificationOn) {
+                 showNotification(err.message, 'red')
+             }
          }
-         if (errors) return;
+         if (errors) {
+             showLogin();
+             return
+         }
+         fetchLogin(auth.encryptData(userInfo))
+             .then((success) => {
+                 auth.saveCredentials(userInfo.name, userInfo.password);
+                 showUserInfoBlock(userInfo.name)
+             }, err => {
+                 if (notificationOn) {
+                     showNotification(err.message, 'red')
+                 }
+                 showLogin()
+             })
+     }
 
-
+     static logOut () {
+         let auth = new Auth();
+         auth.deleteCredentials();
+         viewLogOut();
+     }
+     
+     static resetPassword () {
+         
      }
 
     static listenButtons () {
@@ -85,6 +110,7 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock} from './View
         document.getElementById('loginBtn').onclick = Controller.login;
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
         document.getElementById('endRegistration').onclick = Controller.register;
+        document.getElementById('logOut').onclick = Controller.logOut;
     }
 
 }
@@ -101,10 +127,13 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock} from './View
  
  window.onload = () => {
      
+     /*Controller.listenButtons();
+     Controller.login();*/
+     hideAll();
+
 
      setTimeout(() => {
          learningMachine.sendQuestion();
-         Controller.listenButtons();
      }, 200)
  };
 

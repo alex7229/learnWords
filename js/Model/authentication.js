@@ -5,15 +5,6 @@ import login from '../AjaxRequests/login';
 import registration from '../AjaxRequests/registration'
 
 export default class {
-
-    checkUserInfo (encryptedLoginPassword) {
-        const authData = this.findLocalAuthData();
-        if (authData) {
-            return this.encryptData(authData);
-        } else {
-            throw new Error('U have not declared password or login')
-        }
-    }
     
     findLocalAuthData () {
         let name = localStorage.getItem('authName');
@@ -27,7 +18,21 @@ export default class {
                 name,
                 password
             }
+        } else {
+            throw new Error('You missed login or password.')
         }
+    }
+    
+    saveCredentials (name, password) {
+        if (!localStorage) return;
+        localStorage.setItem('authName', name);
+        localStorage.setItem('authPassword', password)
+    }
+    
+    deleteCredentials () {
+        if (!localStorage) return;
+        localStorage.removeItem('authName');
+        localStorage.removeItem('authPassword')
     }
 
     encryptData (userInfo) {

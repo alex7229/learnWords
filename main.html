@@ -8,17 +8,22 @@
 </head>
 <body>
 <form id="authentication">
-    <div id="authDefault">
-        <label for="login">Login</label><br>
-        <input type="text" id="login"><br>
-        <label for="password">Password</label><br>
-        <input type="password" id="password"><br>
-        <div>
+    <div id="authDefault" class="auth">
+        <div id="loginBlock" class='auth'>
+            <label for="login">Login</label><br>
+            <input type="text" id="login"><br>
+        </div>
+        <div id="passwordBlock" class="auth">
+            <label for="password">Password</label><br>
+            <input type="password" id="password"><br>
+        </div>
+        <div id="buttonsBlock" class="auth">
             <button type="button" id="loginBtn">LogIn</button>
             <button type="button" id="startRegistration">Registration</button>
+            <button type="button" id="resetPasswordBtn">Reset password</button>
         </div>
     </div>
-    <div id="registrationBlock">
+    <div id="registration" class="auth">
         <label for="repeatedPassword">Repeat password</label><br>
         <input type="password" id="repeatedPassword"><br>
         <label for="email">Email (for password reset)</label><br>
@@ -29,11 +34,14 @@
         <input type="text" id="secretAnswer"><br>
         <button type="button" id="endRegistration">Submit registration</button>
     </div>
-    <div id="profileData">
-        <p>User: <span id='profileName'></span></p>
-        <button type="button">LogOut</button>
+    <div id="resetPassword" class="auth">
+
     </div>
-    <div class='notification'></div>
+    <div id="profileData" class="auth">
+        <p>User: <span id='profileName'></span></p>
+        <button type="button" id="logOut">LogOut</button>
+    </div>
+    <div class='notification auth'></div>
 </form>
 <form>
     <label for="word">type word for search</label><br>

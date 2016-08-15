@@ -642,16 +642,6 @@ var _class = function () {
     }
 
     _createClass(_class, [{
-        key: 'checkUserInfo',
-        value: function checkUserInfo(encryptedLoginPassword) {
-            var authData = this.findLocalAuthData();
-            if (authData) {
-                return this.encryptData(authData);
-            } else {
-                throw new Error('U have not declared password or login');
-            }
-        }
-    }, {
         key: 'findLocalAuthData',
         value: function findLocalAuthData() {
             var name = localStorage.getItem('authName');
@@ -665,7 +655,23 @@ var _class = function () {
                     name: name,
                     password: password
                 };
+            } else {
+                throw new Error('You missed login or password.');
             }
+        }
+    }, {
+        key: 'saveCredentials',
+        value: function saveCredentials(name, password) {
+            if (!localStorage) return;
+            localStorage.setItem('authName', name);
+            localStorage.setItem('authPassword', password);
+        }
+    }, {
+        key: 'deleteCredentials',
+        value: function deleteCredentials() {
+            if (!localStorage) return;
+            localStorage.removeItem('authName');
+            localStorage.removeItem('authPassword');
         }
     }, {
         key: 'encryptData',
@@ -1009,18 +1015,21 @@ Object.defineProperty(exports, "__esModule", {
 exports.showRegistrationBlock = showRegistrationBlock;
 exports.showUserInfoBlock = showUserInfoBlock;
 exports.showNotification = showNotification;
+exports.showLogin = showLogin;
+exports.logOut = logOut;
+exports.hideAll = hideAll;
 /**
  * Created by tup1tsa on 12.08.2016.
  */
 function showRegistrationBlock() {
-    document.querySelector('#authDefault div, #profileData, #authentication .notification').style.display = 'none';
-    document.getElementById('registrationBlock').style.display = 'block';
+    hideAll();
+    display(['#authDefault', '#loginBlock', '#passwordBlock', '#registration']);
 }
 
 function showUserInfoBlock(profileName) {
-    hide(['#authDefault div', '#authentication .notification', '#registrationBLock']);
-    display(['#profileData']);
+    hideAll();
     document.getElementById('profileName').innerText = profileName;
+    display(['profileData']);
 }
 
 function showNotification(text) {
@@ -1032,17 +1041,34 @@ function showNotification(text) {
     elem.style.color = color;
 }
 
-function display(selectors) {
-    selectors.map(function (selector) {
-        document.querySelector(selector).style.display = 'block';
-    });
+function showLogin() {
+    hideAll();
+    display(['#loginBlock', '#passwordBlock', '#buttonsBlock', '#authDefault']);
 }
 
-function hide(selectors) {
-    selectors.map(function (selector) {
-        console.log(selector);
-        document.querySelector(selector).style.display = 'none';
-    });
+function logOut() {
+    display(['#authDefault', '#authDefault div']);
+    hide(['#registration', '#profileData', '#authentication .notification']);
+}
+
+function display() {
+    for (var _len = arguments.length, selectors = Array(_len), _key = 0; _key < _len; _key++) {
+        selectors[_key] = arguments[_key];
+    }
+
+    document.querySelectorAll(selectors).style.display = 'block';
+}
+
+function hide() {
+    for (var _len2 = arguments.length, selectors = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+        selectors[_key2] = arguments[_key2];
+    }
+
+    document.querySelectorAll(selectors).style.display = 'none';
+}
+
+function hideAll() {
+    document.getElementsByClassName('auth').style.display = 'none';
 }
 
 },{}],14:[function(require,module,exports){
@@ -1221,24 +1247,50 @@ var Controller = function () {
             }
             if (errors) return;
             (0, _registration2.default)(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer).then(function () {
-                (0, _authForm.showUserInfoBlock)(auth.findLocalAuthData().name);
+                var userInfo = auth.findLocalAuthData();
+                auth.saveCredentials(userInfo.name, userInfo.password);
+                (0, _authForm.showUserInfoBlock)(userInfo.name);
             }, function (err) {
                 (0, _authForm.showNotification)(err.message, 'red');
             });
         }
     }, {
         key: 'login',
-        value: function login() {
+        value: function login(notificationOn) {
             var auth = new _authentication2.default();
             var errors = false;
             try {
-                auth.checkUserInfo();
+                var userInfo = auth.findLocalAuthData();
             } catch (err) {
                 errors = true;
-                (0, _authForm.showNotification)(err.message, 'red');
+                if (notificationOn) {
+                    (0, _authForm.showNotification)(err.message, 'red');
+                }
             }
-            if (errors) return;
+            if (errors) {
+                (0, _authForm.showLogin)();
+                return;
+            }
+            (0, _login2.default)(auth.encryptData(userInfo)).then(function (success) {
+                auth.saveCredentials(userInfo.name, userInfo.password);
+                (0, _authForm.showUserInfoBlock)(userInfo.name);
+            }, function (err) {
+                if (notificationOn) {
+                    (0, _authForm.showNotification)(err.message, 'red');
+                }
+                (0, _authForm.showLogin)();
+            });
         }
+    }, {
+        key: 'logOut',
+        value: function logOut() {
+            var auth = new _authentication2.default();
+            auth.deleteCredentials();
+            (0, _authForm.logOut)();
+        }
+    }, {
+        key: 'resetPassword',
+        value: function resetPassword() {}
     }, {
         key: 'listenButtons',
         value: function listenButtons() {
@@ -1249,6 +1301,7 @@ var Controller = function () {
             document.getElementById('loginBtn').onclick = Controller.login;
             document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
             document.getElementById('endRegistration').onclick = Controller.register;
+            document.getElementById('logOut').onclick = Controller.logOut;
         }
     }]);
 
@@ -1260,9 +1313,12 @@ learningMachine.getAllWords();
 
 window.onload = function () {
 
+    /*Controller.listenButtons();
+    Controller.login();*/
+    (0, _authForm.hideAll)();
+
     setTimeout(function () {
         learningMachine.sendQuestion();
-        Controller.listenButtons();
     }, 200);
 };
 
