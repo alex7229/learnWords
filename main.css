@@ -28,9 +28,13 @@ html, body {
     color: darkred;
 }
 #authentication {
+    display: none;
     float: right;
     width: 270px
 }
-.auth {
+.hidden {
     display: none
+}
+.shown {
+    display: block;
 }

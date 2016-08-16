@@ -8,40 +8,48 @@
 </head>
 <body>
 <form id="authentication">
-    <div id="authDefault" class="auth">
-        <div id="loginBlock" class='auth'>
+        <div class='auth login registration resetPassword'>
             <label for="login">Login</label><br>
             <input type="text" id="login"><br>
         </div>
-        <div id="passwordBlock" class="auth">
+        <div class="auth login registration resetPassword">
             <label for="password">Password</label><br>
             <input type="password" id="password"><br>
         </div>
-        <div id="buttonsBlock" class="auth">
+        <div class="auth login">
             <button type="button" id="loginBtn">LogIn</button>
             <button type="button" id="startRegistration">Registration</button>
-            <button type="button" id="resetPasswordBtn">Reset password</button>
+            <button type="button" id="resetPasswordStart">Reset password</button>
         </div>
-    </div>
-    <div id="registration" class="auth">
-        <label for="repeatedPassword">Repeat password</label><br>
-        <input type="password" id="repeatedPassword"><br>
-        <label for="email">Email (for password reset)</label><br>
-        <input type="email" id="email"><br>
-        <label for="secretQuestion">Secret question</label><br>
-        <input type="text" id="secretQuestion"><br>
-        <label for="secretAnswer">Secret answer</label><br>
-        <input type="text" id="secretAnswer"><br>
-        <button type="button" id="endRegistration">Submit registration</button>
-    </div>
-    <div id="resetPassword" class="auth">
-
-    </div>
-    <div id="profileData" class="auth">
-        <p>User: <span id='profileName'></span></p>
-        <button type="button" id="logOut">LogOut</button>
-    </div>
-    <div class='notification auth'></div>
+        <div class="auth registration">
+            <label for="repeatedPassword">Repeat password</label><br>
+            <input type="password" id="repeatedPassword"><br>
+        </div>
+        <div class="auth registration resetPassword">
+            <label for="email">Email (for password reset)</label><br>
+            <input type="email" id="email"><br>
+        </div>
+        <div class="auth registration">
+            <label for="secretQuestion">Secret question</label><br>
+            <input type="text" id="secretQuestion"><br>
+        </div>
+        <div class="auth registration resetPassword">
+            <label for="secretAnswer">Secret answer</label><br>
+            <input type="text" id="secretAnswer"><br>
+        </div>
+        <div class="auth registration">
+            <button type="button" id="endRegistration">Submit registration</button>
+        </div>
+        <div class="auth resetPassword">
+            <p>Secret question: <span id="secretQuestionData"></span></p>
+            <button type="button" id="getSecretQuestion">get question</button>
+            <button type="button" id="resetPasswordFinish">Send answer</button>
+        </div>
+        <div  class="auth profileData">
+            <p>User: <span id='profileName'></span></p>
+            <button type="button" id="logOut">LogOut</button>
+        </div>
+        <div class='auth notification'></div>
 </form>
 <form>
     <label for="word">type word for search</label><br>

@@ -3,40 +3,50 @@
  */
 export function showRegistrationBlock () {
     hideAll();
-    display(['#authDefault', '#loginBlock', '#passwordBlock', '#registration']);
+    display(`.registration`);
 }
 
 export function showUserInfoBlock(profileName) {
     hideAll();
     document.getElementById('profileName').innerText = profileName;
-    display(['profileData'])
+    display('.profileData')
 }
 
 export function showNotification (text, color = 'black') {
-    const elem = document.querySelector('#authentication .notification');
+    const elem = document.getElementsByClassName('auth notification');
     elem.innerHTML = `<p>${text}</p>`;
-    elem.style.display = 'block';
+    elem.className = 'auth notification shown';
     elem.style.color = color;
+}
+
+export function hideNotification () {
+    document.getElementsByClassName('auth notification').className = 'auth notification hidden'
+}
+
+export function showResetPasswordBlock () {
+    hideAll();
+    display(`.resetPassword`);
 }
 
 export function showLogin () {
     hideAll();
-    display(['#loginBlock', '#passwordBlock', '#buttonsBlock', '#authDefault'])
+    display('.login')
 }
 
-export function logOut () {
-    display(['#authDefault', '#authDefault div']);
-    hide(['#registration', '#profileData', '#authentication .notification'])
+export function showAuthForm () {
+    document.getElementById('authentication').style.display = 'block'
 }
 
-function display(...selectors) {
-    document.querySelectorAll(selectors).style.display = 'block'
+function display(selectors) {
+    document.querySelectorAll(selectors).forEach(elem => {
+        const previousClassName = elem.className;
+        elem.className = previousClassName.replace('hidden', 'shown');
+    })
 }
 
-function hide (...selectors) {
-    document.querySelectorAll(selectors).style.display = 'none'
-}
-
-export function hideAll () {
-    document.getElementsByClassName('auth').style.display = 'none'
+function hideAll () {
+    document.querySelectorAll('.auth').forEach(elem => {
+        const previousClassName = elem.className;
+        elem.className = previousClassName.replace('shown', 'hidden');
+    })
 }

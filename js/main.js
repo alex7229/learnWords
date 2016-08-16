@@ -5,12 +5,13 @@ import googleApi from './AjaxRequests/googleApi'
 import savedYandexTranslation from './AjaxRequests/savedYandexTranslation'
 import fetchRegistration from './AjaxRequests/registration'
 import fetchLogin from './AjaxRequests/login'
+import fetchResetPassword from './AjaxRequests/resetPassword'
 import YandexParse from './Parse/yandex'
 import GoogleParse from './Parse/google'
 import Auth from './Model/authentication.js'
 import LearnMachine from './Model/learningMachine'
 import {yandex as yandexView, google as googleView} from './View/translations'
-import {showRegistrationBlock, showNotification, showUserInfoBlock, showLogin, logOut as viewLogOut, hideAll} from './View/authForm'
+import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNotification, showUserInfoBlock, showLogin, showAuthForm, logOut as viewLogOut} from './View/authForm'
 
 
 
@@ -51,7 +52,7 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock, showLogin, l
          try {
              var userInfo = auth.gatherUserInfo()
          } catch (err) {
-             showNotification(err.message, 'red');
+             showNotification(err.message, 'brown');
              errors  = true
          }
          if (errors) return;
@@ -61,45 +62,48 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock, showLogin, l
                  auth.saveCredentials(userInfo.name, userInfo.password);
                  showUserInfoBlock(userInfo.name)
              }, err => {
-                 showNotification(err.message, 'red');
+                 showNotification(err.message, 'brown');
              })
      }
      
-     static login (notificationOn) {
-         const auth = new Auth();
-         let errors = false;
-         try {
-             var userInfo = auth.findLocalAuthData()
-         } catch (err) {
-             errors = true;
-             if (notificationOn) {
-                 showNotification(err.message, 'red')
+     static login () {
+         return new Promise ((resolve, reject) => {
+             const auth = new Auth();
+             try {
+                 var userInfo = auth.findLocalAuthData()
+             } catch (err) {
+                 showNotification(err.message, 'brown');
+                 reject(err.message);
              }
-         }
-         if (errors) {
-             showLogin();
-             return
-         }
-         fetchLogin(auth.encryptData(userInfo))
-             .then((success) => {
-                 auth.saveCredentials(userInfo.name, userInfo.password);
-                 showUserInfoBlock(userInfo.name)
-             }, err => {
-                 if (notificationOn) {
-                     showNotification(err.message, 'red')
-                 }
-                 showLogin()
-             })
+             fetchLogin(auth.encryptData(userInfo))
+                 .then((result) => {
+                     auth.saveCredentials(userInfo.name, userInfo.password);
+                     showUserInfoBlock(userInfo.name);
+                     resolve(result)
+                 }, err => {
+                     showNotification(err.message, 'brown');
+                     reject(err.message)
+                 })
+         })
      }
 
      static logOut () {
-         let auth = new Auth();
+         const auth = new Auth();
          auth.deleteCredentials();
          viewLogOut();
      }
      
-     static resetPassword () {
+     static getSecretQuestion () {
          
+     }
+     
+     static resetPassword () {
+         const login = document.getElementById('login').value;
+         if (!login) {
+             showNotification('Enter your login.', 'brown');
+             return
+         }
+         showResetPasswordBlock();
      }
 
     static listenButtons () {
@@ -111,6 +115,8 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock, showLogin, l
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
         document.getElementById('endRegistration').onclick = Controller.register;
         document.getElementById('logOut').onclick = Controller.logOut;
+        document.getElementById('resetPasswordStart').onclick = showResetPasswordBlock;
+        document.getElementById('getSecretQuestion').onclick = Controller.getSecretQuestion;
     }
 
 }
@@ -127,9 +133,17 @@ import {showRegistrationBlock, showNotification, showUserInfoBlock, showLogin, l
  
  window.onload = () => {
      
-     /*Controller.listenButtons();
-     Controller.login();*/
-     hideAll();
+     Controller.listenButtons();
+     Controller.login()
+         .then(() => {
+             showAuthForm()
+         }, () => {
+             showAuthForm();
+             showLogin();
+             hideNotification()
+         });
+
+
 
 
      setTimeout(() => {

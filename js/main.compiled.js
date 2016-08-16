@@ -458,7 +458,7 @@ exports.default = function () {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":12}],3:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":13}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -489,7 +489,7 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":12}],4:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":13}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -520,7 +520,7 @@ exports.default = function (encryptedLoginPassword) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":12}],5:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":13}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -556,7 +556,41 @@ exports.default = function (encryptedLoginPassword, email, secretQuestion, secre
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":12}],6:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":13}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
+
+var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (login, secretAnswer) {
+    return new Promise(function (resolve, reject) {
+        fetch('/auth/resetPassword', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                login: login,
+                secretAnswer: secretAnswer
+            })
+        }).then(_fetchStatusHangling2.default).then(function (response) {
+            resolve(response.text());
+        }).catch(function (err) {
+            reject(err);
+        });
+    });
+}; /**
+    * Created by tup1tsa on 16.08.2016.
+    */
+
+},{"../Utils/fetchStatusHangling":13}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -581,7 +615,7 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":12}],7:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":13}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -612,7 +646,7 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":12}],8:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":13}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -711,7 +745,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{"../AjaxRequests/login":4,"../AjaxRequests/registration":5}],9:[function(require,module,exports){
+},{"../AjaxRequests/login":4,"../AjaxRequests/registration":5}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -802,7 +836,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{"../AjaxRequests/getWordsList":2,"../AjaxRequests/savedYandexTranslation":6,"../Parse/yandex":11,"../View/learnMachineView":14}],10:[function(require,module,exports){
+},{"../AjaxRequests/getWordsList":2,"../AjaxRequests/savedYandexTranslation":7,"../Parse/yandex":12,"../View/learnMachineView":15}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -901,7 +935,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -981,7 +1015,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1006,7 +1040,7 @@ exports.default = function (response) {
     }
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1015,63 +1049,66 @@ Object.defineProperty(exports, "__esModule", {
 exports.showRegistrationBlock = showRegistrationBlock;
 exports.showUserInfoBlock = showUserInfoBlock;
 exports.showNotification = showNotification;
+exports.hideNotification = hideNotification;
+exports.showResetPasswordBlock = showResetPasswordBlock;
 exports.showLogin = showLogin;
-exports.logOut = logOut;
-exports.hideAll = hideAll;
+exports.showAuthForm = showAuthForm;
 /**
  * Created by tup1tsa on 12.08.2016.
  */
 function showRegistrationBlock() {
     hideAll();
-    display(['#authDefault', '#loginBlock', '#passwordBlock', '#registration']);
+    display('.registration');
 }
 
 function showUserInfoBlock(profileName) {
     hideAll();
     document.getElementById('profileName').innerText = profileName;
-    display(['profileData']);
+    display('.profileData');
 }
 
 function showNotification(text) {
     var color = arguments.length <= 1 || arguments[1] === undefined ? 'black' : arguments[1];
 
-    var elem = document.querySelector('#authentication .notification');
+    var elem = document.getElementsByClassName('auth notification');
     elem.innerHTML = '<p>' + text + '</p>';
-    elem.style.display = 'block';
+    elem.className = 'auth notification shown';
     elem.style.color = color;
+}
+
+function hideNotification() {
+    document.getElementsByClassName('auth notification').className = 'auth notification hidden';
+}
+
+function showResetPasswordBlock() {
+    hideAll();
+    display('.resetPassword');
 }
 
 function showLogin() {
     hideAll();
-    display(['#loginBlock', '#passwordBlock', '#buttonsBlock', '#authDefault']);
+    display('.login');
 }
 
-function logOut() {
-    display(['#authDefault', '#authDefault div']);
-    hide(['#registration', '#profileData', '#authentication .notification']);
+function showAuthForm() {
+    document.getElementById('authentication').style.display = 'block';
 }
 
-function display() {
-    for (var _len = arguments.length, selectors = Array(_len), _key = 0; _key < _len; _key++) {
-        selectors[_key] = arguments[_key];
-    }
-
-    document.querySelectorAll(selectors).style.display = 'block';
-}
-
-function hide() {
-    for (var _len2 = arguments.length, selectors = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-        selectors[_key2] = arguments[_key2];
-    }
-
-    document.querySelectorAll(selectors).style.display = 'none';
+function display(selectors) {
+    document.querySelectorAll(selectors).forEach(function (elem) {
+        var previousClassName = elem.className;
+        elem.className = previousClassName.replace('hidden', 'shown');
+    });
 }
 
 function hideAll() {
-    document.getElementsByClassName('auth').style.display = 'none';
+    document.querySelectorAll('.auth').forEach(function (elem) {
+        var previousClassName = elem.className;
+        elem.className = previousClassName.replace('shown', 'hidden');
+    });
 }
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1108,7 +1145,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1150,7 +1187,7 @@ function google(data) {
     document.getElementById('dictionaryBox').innerHTML = grammar + definitions + webDefinition;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1174,6 +1211,10 @@ var _registration2 = _interopRequireDefault(_registration);
 var _login = require('./AjaxRequests/login');
 
 var _login2 = _interopRequireDefault(_login);
+
+var _resetPassword = require('./AjaxRequests/resetPassword');
+
+var _resetPassword2 = _interopRequireDefault(_resetPassword);
 
 var _yandex = require('./Parse/yandex');
 
@@ -1242,7 +1283,7 @@ var Controller = function () {
             try {
                 var userInfo = auth.gatherUserInfo();
             } catch (err) {
-                (0, _authForm.showNotification)(err.message, 'red');
+                (0, _authForm.showNotification)(err.message, 'brown');
                 errors = true;
             }
             if (errors) return;
@@ -1251,34 +1292,28 @@ var Controller = function () {
                 auth.saveCredentials(userInfo.name, userInfo.password);
                 (0, _authForm.showUserInfoBlock)(userInfo.name);
             }, function (err) {
-                (0, _authForm.showNotification)(err.message, 'red');
+                (0, _authForm.showNotification)(err.message, 'brown');
             });
         }
     }, {
         key: 'login',
-        value: function login(notificationOn) {
-            var auth = new _authentication2.default();
-            var errors = false;
-            try {
-                var userInfo = auth.findLocalAuthData();
-            } catch (err) {
-                errors = true;
-                if (notificationOn) {
-                    (0, _authForm.showNotification)(err.message, 'red');
+        value: function login() {
+            return new Promise(function (resolve, reject) {
+                var auth = new _authentication2.default();
+                try {
+                    var userInfo = auth.findLocalAuthData();
+                } catch (err) {
+                    (0, _authForm.showNotification)(err.message, 'brown');
+                    reject(err.message);
                 }
-            }
-            if (errors) {
-                (0, _authForm.showLogin)();
-                return;
-            }
-            (0, _login2.default)(auth.encryptData(userInfo)).then(function (success) {
-                auth.saveCredentials(userInfo.name, userInfo.password);
-                (0, _authForm.showUserInfoBlock)(userInfo.name);
-            }, function (err) {
-                if (notificationOn) {
-                    (0, _authForm.showNotification)(err.message, 'red');
-                }
-                (0, _authForm.showLogin)();
+                (0, _login2.default)(auth.encryptData(userInfo)).then(function (result) {
+                    auth.saveCredentials(userInfo.name, userInfo.password);
+                    (0, _authForm.showUserInfoBlock)(userInfo.name);
+                    resolve(result);
+                }, function (err) {
+                    (0, _authForm.showNotification)(err.message, 'brown');
+                    reject(err.message);
+                });
             });
         }
     }, {
@@ -1289,8 +1324,18 @@ var Controller = function () {
             (0, _authForm.logOut)();
         }
     }, {
+        key: 'getSecretQuestion',
+        value: function getSecretQuestion() {}
+    }, {
         key: 'resetPassword',
-        value: function resetPassword() {}
+        value: function resetPassword() {
+            var login = document.getElementById('login').value;
+            if (!login) {
+                (0, _authForm.showNotification)('Enter your login.', 'brown');
+                return;
+            }
+            (0, _authForm.showResetPasswordBlock)();
+        }
     }, {
         key: 'listenButtons',
         value: function listenButtons() {
@@ -1302,6 +1347,8 @@ var Controller = function () {
             document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
             document.getElementById('endRegistration').onclick = Controller.register;
             document.getElementById('logOut').onclick = Controller.logOut;
+            document.getElementById('resetPasswordStart').onclick = _authForm.showResetPasswordBlock;
+            document.getElementById('getSecretQuestion').onclick = Controller.getSecretQuestion;
         }
     }]);
 
@@ -1313,16 +1360,21 @@ learningMachine.getAllWords();
 
 window.onload = function () {
 
-    /*Controller.listenButtons();
-    Controller.login();*/
-    (0, _authForm.hideAll)();
+    Controller.listenButtons();
+    Controller.login().then(function () {
+        (0, _authForm.showAuthForm)();
+    }, function () {
+        (0, _authForm.showAuthForm)();
+        (0, _authForm.showLogin)();
+        (0, _authForm.hideNotification)();
+    });
 
     setTimeout(function () {
         learningMachine.sendQuestion();
     }, 200);
 };
 
-},{"./AjaxRequests/googleApi":3,"./AjaxRequests/login":4,"./AjaxRequests/registration":5,"./AjaxRequests/savedYandexTranslation":6,"./AjaxRequests/yandexApi":7,"./Model/authentication.js":8,"./Model/learningMachine":9,"./Parse/google":10,"./Parse/yandex":11,"./View/authForm":13,"./View/translations":15,"whatwg-fetch":1}]},{},[16])
+},{"./AjaxRequests/googleApi":3,"./AjaxRequests/login":4,"./AjaxRequests/registration":5,"./AjaxRequests/resetPassword":6,"./AjaxRequests/savedYandexTranslation":7,"./AjaxRequests/yandexApi":8,"./Model/authentication.js":9,"./Model/learningMachine":10,"./Parse/google":11,"./Parse/yandex":12,"./View/authForm":14,"./View/translations":16,"whatwg-fetch":1}]},{},[17])
 
 
 //# sourceMappingURL=main.compiled.js.map
