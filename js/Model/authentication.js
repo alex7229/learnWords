@@ -10,8 +10,8 @@ export default class {
         let name = localStorage.getItem('authName');
         let password = localStorage.getItem('authPassword');
         if (!(name && password)) {
-            name = document.getElementById('login').value;
-            password = document.getElementById('password').value;
+            name = document.getElementById('loginDefault').value;
+            password = document.getElementById('passwordDefault').value;
         }
         if (name && password) {
             return {
@@ -40,13 +40,13 @@ export default class {
     }
     
     gatherUserInfo() {
-        const name = document.getElementById('login').value;
-        const password = document.getElementById('password').value;
+        const name = document.getElementById('loginReg').value;
+        const password = document.getElementById('passwordReg').value;
         const checkPassword = document.getElementById('repeatedPassword').value;
-        const email = document.getElementById('email').value;
-        const secretQuestion = document.getElementById('secretQuestion').value;
-        const secretAnswer = document.getElementById('secretAnswer').value;
-        if (!name || !password || !email || !secretQuestion || !secretAnswer) {
+        const email = document.getElementById('emailReg').value;
+        const secretQuestion = document.getElementById('secretQuestionReg').value;
+        const secretAnswer = document.getElementById('secretAnswerReg').value;
+        if (!name || !password || !checkPassword || !email || !secretQuestion || !secretAnswer) {
             throw new Error ('All fields required')
         }
         if (password !== checkPassword) {

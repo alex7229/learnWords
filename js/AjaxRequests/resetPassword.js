@@ -3,7 +3,7 @@
  */
 import checkStatus from '../Utils/fetchStatusHangling';
 
-export default (login, secretAnswer) => {
+export function getSecretQuestion (login, email)  {
     return new Promise ((resolve, reject) => {
         fetch('/auth/resetPassword', {
             method: 'post',
@@ -12,7 +12,30 @@ export default (login, secretAnswer) => {
             },
             body: JSON.stringify({
                 login,
-                secretAnswer
+                email
+            })
+        })
+            .then(checkStatus)
+            .then(response => {
+                resolve(response.text())
+            })
+            .catch(err => {
+                reject (err)
+            })
+    })
+}
+
+export function sendSecretAnswer (login, email, answer)  {
+    return new Promise ((resolve, reject) => {
+        fetch('/auth/resetPassword', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                login,
+                email,
+                answer
             })
         })
             .then(checkStatus)

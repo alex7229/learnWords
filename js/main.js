@@ -5,7 +5,7 @@ import googleApi from './AjaxRequests/googleApi'
 import savedYandexTranslation from './AjaxRequests/savedYandexTranslation'
 import fetchRegistration from './AjaxRequests/registration'
 import fetchLogin from './AjaxRequests/login'
-import fetchResetPassword from './AjaxRequests/resetPassword'
+import {getSecretQuestion, sendSecretAnswer} from './AjaxRequests/resetPassword'
 import YandexParse from './Parse/yandex'
 import GoogleParse from './Parse/google'
 import Auth from './Model/authentication.js'
@@ -94,7 +94,14 @@ import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNot
      }
      
      static getSecretQuestion () {
-         
+         const login = document.getElementById('login').value;
+         const email = document.getElementById('email').value;
+         getSecretQuestion(login, email)
+             .then((response) => {
+                 console.log(response)
+             }, err => {
+                 console.log(err)
+             })
      }
      
      static resetPassword () {
@@ -142,6 +149,8 @@ import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNot
              showLogin();
              hideNotification()
          });
+
+
 
 
 

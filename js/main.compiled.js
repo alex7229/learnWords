@@ -562,6 +562,8 @@ exports.default = function (encryptedLoginPassword, email, secretQuestion, secre
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.getSecretQuestion = getSecretQuestion;
+exports.sendSecretAnswer = sendSecretAnswer;
 
 var _fetchStatusHangling = require('../Utils/fetchStatusHangling');
 
@@ -569,7 +571,7 @@ var _fetchStatusHangling2 = _interopRequireDefault(_fetchStatusHangling);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = function (login, secretAnswer) {
+function getSecretQuestion(login, email) {
     return new Promise(function (resolve, reject) {
         fetch('/auth/resetPassword', {
             method: 'post',
@@ -578,7 +580,7 @@ exports.default = function (login, secretAnswer) {
             },
             body: JSON.stringify({
                 login: login,
-                secretAnswer: secretAnswer
+                email: email
             })
         }).then(_fetchStatusHangling2.default).then(function (response) {
             resolve(response.text());
@@ -586,9 +588,28 @@ exports.default = function (login, secretAnswer) {
             reject(err);
         });
     });
-}; /**
-    * Created by tup1tsa on 16.08.2016.
-    */
+} /**
+   * Created by tup1tsa on 16.08.2016.
+   */
+function sendSecretAnswer(login, email, answer) {
+    return new Promise(function (resolve, reject) {
+        fetch('/auth/resetPassword', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                login: login,
+                email: email,
+                answer: answer
+            })
+        }).then(_fetchStatusHangling2.default).then(function (response) {
+            resolve(response.text());
+        }).catch(function (err) {
+            reject(err);
+        });
+    });
+}
 
 },{"../Utils/fetchStatusHangling":13}],7:[function(require,module,exports){
 'use strict';
@@ -681,8 +702,8 @@ var _class = function () {
             var name = localStorage.getItem('authName');
             var password = localStorage.getItem('authPassword');
             if (!(name && password)) {
-                name = document.getElementById('login').value;
-                password = document.getElementById('password').value;
+                name = document.getElementById('loginDefault').value;
+                password = document.getElementById('passwordDefault').value;
             }
             if (name && password) {
                 return {
@@ -715,13 +736,13 @@ var _class = function () {
     }, {
         key: 'gatherUserInfo',
         value: function gatherUserInfo() {
-            var name = document.getElementById('login').value;
-            var password = document.getElementById('password').value;
+            var name = document.getElementById('loginReg').value;
+            var password = document.getElementById('passwordReg').value;
             var checkPassword = document.getElementById('repeatedPassword').value;
-            var email = document.getElementById('email').value;
-            var secretQuestion = document.getElementById('secretQuestion').value;
-            var secretAnswer = document.getElementById('secretAnswer').value;
-            if (!name || !password || !email || !secretQuestion || !secretAnswer) {
+            var email = document.getElementById('emailReg').value;
+            var secretQuestion = document.getElementById('secretQuestionReg').value;
+            var secretAnswer = document.getElementById('secretAnswerReg').value;
+            if (!name || !password || !checkPassword || !email || !secretQuestion || !secretAnswer) {
                 throw new Error('All fields required');
             }
             if (password !== checkPassword) {
@@ -1058,53 +1079,49 @@ exports.showAuthForm = showAuthForm;
  */
 function showRegistrationBlock() {
     hideAll();
-    display('.registration');
+    display('registration');
 }
 
 function showUserInfoBlock(profileName) {
     hideAll();
     document.getElementById('profileName').innerText = profileName;
-    display('.profileData');
+    display('profileData');
 }
 
 function showNotification(text) {
     var color = arguments.length <= 1 || arguments[1] === undefined ? 'black' : arguments[1];
 
-    var elem = document.getElementsByClassName('auth notification');
+    var elem = document.getElementById('authNotification');
     elem.innerHTML = '<p>' + text + '</p>';
-    elem.className = 'auth notification shown';
     elem.style.color = color;
+    elem.style.display = 'block';
 }
 
 function hideNotification() {
-    document.getElementsByClassName('auth notification').className = 'auth notification hidden';
+    document.getElementById('authNotification').style.display = 'none';
 }
 
 function showResetPasswordBlock() {
     hideAll();
-    display('.resetPassword');
+    display('resetPassword');
 }
 
 function showLogin() {
     hideAll();
-    display('.login');
+    display('authDefault');
 }
 
 function showAuthForm() {
     document.getElementById('authentication').style.display = 'block';
 }
 
-function display(selectors) {
-    document.querySelectorAll(selectors).forEach(function (elem) {
-        var previousClassName = elem.className;
-        elem.className = previousClassName.replace('hidden', 'shown');
-    });
+function display(id) {
+    document.getElementById(id).style.display = 'block';
 }
 
 function hideAll() {
     document.querySelectorAll('.auth').forEach(function (elem) {
-        var previousClassName = elem.className;
-        elem.className = previousClassName.replace('shown', 'hidden');
+        elem.style.display = 'none';
     });
 }
 
@@ -1213,8 +1230,6 @@ var _login = require('./AjaxRequests/login');
 var _login2 = _interopRequireDefault(_login);
 
 var _resetPassword = require('./AjaxRequests/resetPassword');
-
-var _resetPassword2 = _interopRequireDefault(_resetPassword);
 
 var _yandex = require('./Parse/yandex');
 
@@ -1325,7 +1340,15 @@ var Controller = function () {
         }
     }, {
         key: 'getSecretQuestion',
-        value: function getSecretQuestion() {}
+        value: function getSecretQuestion() {
+            var login = document.getElementById('login').value;
+            var email = document.getElementById('email').value;
+            (0, _resetPassword.getSecretQuestion)(login, email).then(function (response) {
+                console.log(response);
+            }, function (err) {
+                console.log(err);
+            });
+        }
     }, {
         key: 'resetPassword',
         value: function resetPassword() {

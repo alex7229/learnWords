@@ -3,50 +3,46 @@
  */
 export function showRegistrationBlock () {
     hideAll();
-    display(`.registration`);
+    display('registration')
 }
 
 export function showUserInfoBlock(profileName) {
     hideAll();
     document.getElementById('profileName').innerText = profileName;
-    display('.profileData')
+    display('profileData')
 }
 
 export function showNotification (text, color = 'black') {
-    const elem = document.getElementsByClassName('auth notification');
+    let elem = document.getElementById('authNotification');
     elem.innerHTML = `<p>${text}</p>`;
-    elem.className = 'auth notification shown';
     elem.style.color = color;
+    elem.style.display = 'block'
 }
 
 export function hideNotification () {
-    document.getElementsByClassName('auth notification').className = 'auth notification hidden'
+    document.getElementById('authNotification').style.display = 'none'
 }
 
 export function showResetPasswordBlock () {
     hideAll();
-    display(`.resetPassword`);
+    display(`resetPassword`);
 }
 
 export function showLogin () {
     hideAll();
-    display('.login')
+    display('authDefault')
 }
 
 export function showAuthForm () {
     document.getElementById('authentication').style.display = 'block'
 }
 
-function display(selectors) {
-    document.querySelectorAll(selectors).forEach(elem => {
-        const previousClassName = elem.className;
-        elem.className = previousClassName.replace('hidden', 'shown');
-    })
+function display(id) {
+    document.getElementById(id).style.display = 'block'
 }
 
 function hideAll () {
     document.querySelectorAll('.auth').forEach(elem => {
-        const previousClassName = elem.className;
-        elem.className = previousClassName.replace('shown', 'hidden');
+        elem.style.display='none'
     })
 }
