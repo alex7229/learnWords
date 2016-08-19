@@ -573,7 +573,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function getSecretQuestion(login, email) {
     return new Promise(function (resolve, reject) {
-        fetch('/auth/resetPassword', {
+        fetch('/auth/resetPassword/getQuestion', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
@@ -593,7 +593,7 @@ function getSecretQuestion(login, email) {
    */
 function sendSecretAnswer(login, email, answer) {
     return new Promise(function (resolve, reject) {
-        fetch('/auth/resetPassword', {
+        fetch('/auth/resetPassword/sendAnswer', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
@@ -1341,23 +1341,29 @@ var Controller = function () {
     }, {
         key: 'getSecretQuestion',
         value: function getSecretQuestion() {
-            var login = document.getElementById('login').value;
-            var email = document.getElementById('email').value;
-            (0, _resetPassword.getSecretQuestion)(login, email).then(function (response) {
-                console.log(response);
+            var login = document.getElementById('loginReset').value;
+            var email = document.getElementById('emailReset').value;
+            (0, _resetPassword.getSecretQuestion)(login, email).then(function (secretQuestion) {
+                document.getElementById('secretQuestionReset').innerText = secretQuestion;
             }, function (err) {
-                console.log(err);
+                (0, _authForm.showNotification)(err, 'brown');
             });
         }
     }, {
-        key: 'resetPassword',
-        value: function resetPassword() {
-            var login = document.getElementById('login').value;
-            if (!login) {
-                (0, _authForm.showNotification)('Enter your login.', 'brown');
+        key: 'sendSecretQuestion',
+        value: function sendSecretQuestion() {
+            var login = document.getElementById('loginReset').value;
+            var email = document.getElementById('emailReset').value;
+            var answer = document.getElementById('secretAnswerReset').value;
+            if (!((login || email) && answer)) {
+                (0, _authForm.showNotification)('Enter login or email and secret answer', 'brown');
                 return;
             }
-            (0, _authForm.showResetPasswordBlock)();
+            (0, _resetPassword.sendSecretAnswer)(login, email, answer).then(function (response) {
+                (0, _authForm.showNotification)(response);
+            }, function (err) {
+                (0, _authForm.showNotification)(err, 'brown');
+            });
         }
     }, {
         key: 'listenButtons',
@@ -1372,6 +1378,7 @@ var Controller = function () {
             document.getElementById('logOut').onclick = Controller.logOut;
             document.getElementById('resetPasswordStart').onclick = _authForm.showResetPasswordBlock;
             document.getElementById('getSecretQuestion').onclick = Controller.getSecretQuestion;
+            document.getElementById('resetPasswordFinish').onclick = Controller.sendSecretQuestion;
         }
     }]);
 

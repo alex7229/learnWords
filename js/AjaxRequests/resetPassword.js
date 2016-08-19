@@ -5,7 +5,7 @@ import checkStatus from '../Utils/fetchStatusHangling';
 
 export function getSecretQuestion (login, email)  {
     return new Promise ((resolve, reject) => {
-        fetch('/auth/resetPassword', {
+        fetch('/auth/resetPassword/getQuestion', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'
@@ -27,7 +27,7 @@ export function getSecretQuestion (login, email)  {
 
 export function sendSecretAnswer (login, email, answer)  {
     return new Promise ((resolve, reject) => {
-        fetch('/auth/resetPassword', {
+        fetch('/auth/resetPassword/sendAnswer', {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json'

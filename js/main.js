@@ -5,7 +5,7 @@ import googleApi from './AjaxRequests/googleApi'
 import savedYandexTranslation from './AjaxRequests/savedYandexTranslation'
 import fetchRegistration from './AjaxRequests/registration'
 import fetchLogin from './AjaxRequests/login'
-import {getSecretQuestion, sendSecretAnswer} from './AjaxRequests/resetPassword'
+import {getSecretQuestion as fetchGetQuestion, sendSecretAnswer as fetchSendAnswer} from './AjaxRequests/resetPassword'
 import YandexParse from './Parse/yandex'
 import GoogleParse from './Parse/google'
 import Auth from './Model/authentication.js'
@@ -94,23 +94,32 @@ import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNot
      }
      
      static getSecretQuestion () {
-         const login = document.getElementById('login').value;
-         const email = document.getElementById('email').value;
-         getSecretQuestion(login, email)
-             .then((response) => {
-                 console.log(response)
+         const login = document.getElementById('loginReset').value;
+         const email = document.getElementById('emailReset').value;
+         fetchGetQuestion(login, email)
+             .then((secretQuestion) => {
+                 document.getElementById('secretQuestionReset').innerText = secretQuestion
              }, err => {
-                 console.log(err)
+                 showNotification(err, 'brown')
              })
      }
      
-     static resetPassword () {
-         const login = document.getElementById('login').value;
-         if (!login) {
-             showNotification('Enter your login.', 'brown');
+     static sendSecretQuestion () {
+         const login = document.getElementById('loginReset').value;
+         const email = document.getElementById('emailReset').value;
+         const answer = document.getElementById('secretAnswerReset').value;
+         if (!((login || email) && answer)) {
+             showNotification('Enter login or email and secret answer', 'brown');
              return
          }
-         showResetPasswordBlock();
+         fetchSendAnswer(login, email, answer)
+             .then((response) => {
+                 showNotification(response);
+             }, err => {
+                 showNotification(err, 'brown')
+             })
+
+
      }
 
     static listenButtons () {
@@ -124,6 +133,7 @@ import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNot
         document.getElementById('logOut').onclick = Controller.logOut;
         document.getElementById('resetPasswordStart').onclick = showResetPasswordBlock;
         document.getElementById('getSecretQuestion').onclick = Controller.getSecretQuestion;
+        document.getElementById('resetPasswordFinish').onclick = Controller.sendSecretQuestion;
     }
 
 }
