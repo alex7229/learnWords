@@ -1,8 +1,6 @@
 /**
  * Created by tup1tsa on 08.08.2016.
  */
-import login from '../AjaxRequests/login';
-import registration from '../AjaxRequests/registration'
 
 export default class {
     

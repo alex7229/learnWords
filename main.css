@@ -32,3 +32,16 @@ html, body {
     float: right;
     width: 270px
 }
+input[type='number'] {
+    width: 50px
+}
+#learning {
+    position: relative;
+    top: 50px
+}
+#words {
+    display: block;
+}
+#preferences {
+    display: none
+}

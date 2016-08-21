@@ -3,14 +3,18 @@
  */
 import getWordsList from '../AjaxRequests/getWordsList'
 import getSavedYandexWordTranslation from '../AjaxRequests/savedYandexTranslation'
-import YandexParse from '../Parse/yandex'
+import YandexParse from '../Model/Parse/yandex'
 import View from '../View/learnMachineView'
 
 export default class  {
 
     constructor () {
         this.correctAnswers = [];
-        this.allWords = []
+        this.allWords = [];
+    }
+    
+    setUserData (data) {
+        this.userData = data
     }
 
     getAllWords () {
@@ -20,6 +24,35 @@ export default class  {
             }, err => {
                 throw err
             })
+    }
+
+    getQuestion () {
+        let nextWordNumber;
+        if (this.userData.options.order === 'random') {
+            nextWordNumber = this.findNextRandomWordNumber()
+        } else {
+            nextWordNumber = this.userData.currentWord + 1
+        }
+        
+    }
+    
+    findNextRandomWordNumber () {
+        let number = Math.ceil(Math.random()*this.userData.options.lastWord);
+        let isKnown = this.userData.knownWords.filter(wordNumber => {
+            if (number === wordNumber) {
+                return wordNumber
+            }
+        });
+        let isLearning = this.userData.learningPool.filter(word => {
+            if (word.number === number) {
+                return word
+            }
+        });
+        if (isKnown.length === 0 && isLearning.length === 0) {
+            return number
+        } else {
+            return this.findNextRandomWordNumber()
+        }
     }
 
     checkAnswer () {
@@ -47,6 +80,11 @@ export default class  {
                 throw err
             })
     }
+    
+    showUserData () {
+        console.log(this.userData)
+    }
+
 
 }
 

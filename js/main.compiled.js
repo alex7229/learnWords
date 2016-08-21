@@ -458,7 +458,7 @@ exports.default = function () {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":13}],3:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -489,7 +489,7 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":13}],4:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -520,7 +520,7 @@ exports.default = function (encryptedLoginPassword) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":13}],5:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -556,7 +556,7 @@ exports.default = function (encryptedLoginPassword, email, secretQuestion, secre
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":13}],6:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -611,7 +611,7 @@ function sendSecretAnswer(login, email, answer) {
     });
 }
 
-},{"../Utils/fetchStatusHangling":13}],7:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -636,7 +636,7 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":13}],8:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -667,197 +667,7 @@ exports.default = function (word) {
     * Created by tup1tsa on 11.08.2016.
     */
 
-},{"../Utils/fetchStatusHangling":13}],9:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 08.08.2016.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
-
-
-var _login = require('../AjaxRequests/login');
-
-var _login2 = _interopRequireDefault(_login);
-
-var _registration = require('../AjaxRequests/registration');
-
-var _registration2 = _interopRequireDefault(_registration);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _class = function () {
-    function _class() {
-        _classCallCheck(this, _class);
-    }
-
-    _createClass(_class, [{
-        key: 'findLocalAuthData',
-        value: function findLocalAuthData() {
-            var name = localStorage.getItem('authName');
-            var password = localStorage.getItem('authPassword');
-            if (!(name && password)) {
-                name = document.getElementById('loginDefault').value;
-                password = document.getElementById('passwordDefault').value;
-            }
-            if (name && password) {
-                return {
-                    name: name,
-                    password: password
-                };
-            } else {
-                throw new Error('You missed login or password.');
-            }
-        }
-    }, {
-        key: 'saveCredentials',
-        value: function saveCredentials(name, password) {
-            if (!localStorage) return;
-            localStorage.setItem('authName', name);
-            localStorage.setItem('authPassword', password);
-        }
-    }, {
-        key: 'deleteCredentials',
-        value: function deleteCredentials() {
-            if (!localStorage) return;
-            localStorage.removeItem('authName');
-            localStorage.removeItem('authPassword');
-        }
-    }, {
-        key: 'encryptData',
-        value: function encryptData(userInfo) {
-            return btoa(userInfo.name + ':' + userInfo.password);
-        }
-    }, {
-        key: 'gatherUserInfo',
-        value: function gatherUserInfo() {
-            var name = document.getElementById('loginReg').value;
-            var password = document.getElementById('passwordReg').value;
-            var checkPassword = document.getElementById('repeatedPassword').value;
-            var email = document.getElementById('emailReg').value;
-            var secretQuestion = document.getElementById('secretQuestionReg').value;
-            var secretAnswer = document.getElementById('secretAnswerReg').value;
-            if (!name || !password || !checkPassword || !email || !secretQuestion || !secretAnswer) {
-                throw new Error('All fields required');
-            }
-            if (password !== checkPassword) {
-                throw new Error('Passwords are different');
-            }
-            var encryptedAuthorizationData = this.encryptData({
-                name: name,
-                password: password
-            });
-            return {
-                encryptedAuthorizationData: encryptedAuthorizationData,
-                email: email,
-                secretQuestion: secretQuestion,
-                secretAnswer: secretAnswer
-            };
-        }
-    }]);
-
-    return _class;
-}();
-
-exports.default = _class;
-
-},{"../AjaxRequests/login":4,"../AjaxRequests/registration":5}],10:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 11.08.2016.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
-
-
-var _getWordsList = require('../AjaxRequests/getWordsList');
-
-var _getWordsList2 = _interopRequireDefault(_getWordsList);
-
-var _savedYandexTranslation = require('../AjaxRequests/savedYandexTranslation');
-
-var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
-
-var _yandex = require('../Parse/yandex');
-
-var _yandex2 = _interopRequireDefault(_yandex);
-
-var _learnMachineView = require('../View/learnMachineView');
-
-var _learnMachineView2 = _interopRequireDefault(_learnMachineView);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _class = function () {
-    function _class() {
-        _classCallCheck(this, _class);
-
-        this.correctAnswers = [];
-        this.allWords = [];
-    }
-
-    _createClass(_class, [{
-        key: 'getAllWords',
-        value: function getAllWords() {
-            var _this = this;
-
-            (0, _getWordsList2.default)().then(function (data) {
-                _this.allWords = data;
-            }, function (err) {
-                throw err;
-            });
-        }
-    }, {
-        key: 'checkAnswer',
-        value: function checkAnswer() {
-            var userAnswer = document.getElementById('answerWord').value;
-            if (this.correctAnswers.indexOf(userAnswer) !== -1) {
-                console.log('answer is correct');
-            } else {
-                console.log('answer is incorrect');
-            }
-        }
-    }, {
-        key: 'sendQuestion',
-        value: function sendQuestion() {
-            var wordNumber = Math.ceil(Math.random() * 1000);
-            var word = this.allWords[wordNumber].word;
-            this.getAnswer(word);
-            _learnMachineView2.default.showQuestion(word);
-        }
-    }, {
-        key: 'getAnswer',
-        value: function getAnswer(word) {
-            var _this2 = this;
-
-            (0, _savedYandexTranslation2.default)(word).then(function (data) {
-                var parse = new _yandex2.default(data);
-                _this2.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
-            }, function (err) {
-                throw err;
-            });
-        }
-    }]);
-
-    return _class;
-}();
-
-// todo - view is changing by model, not controller.
-
-
-exports.default = _class;
-
-},{"../AjaxRequests/getWordsList":2,"../AjaxRequests/savedYandexTranslation":7,"../Parse/yandex":12,"../View/learnMachineView":15}],11:[function(require,module,exports){
+},{"../Utils/fetchStatusHangling":14}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -956,7 +766,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],12:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1036,7 +846,274 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],13:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Created by tup1tsa on 08.08.2016.
+ */
+
+var _class = function () {
+    function _class() {
+        _classCallCheck(this, _class);
+    }
+
+    _createClass(_class, [{
+        key: 'findLocalAuthData',
+        value: function findLocalAuthData() {
+            var name = localStorage.getItem('authName');
+            var password = localStorage.getItem('authPassword');
+            if (!(name && password)) {
+                name = document.getElementById('loginDefault').value;
+                password = document.getElementById('passwordDefault').value;
+            }
+            if (name && password) {
+                return {
+                    name: name,
+                    password: password
+                };
+            } else {
+                throw new Error('You missed login or password.');
+            }
+        }
+    }, {
+        key: 'saveCredentials',
+        value: function saveCredentials(name, password) {
+            if (!localStorage) return;
+            localStorage.setItem('authName', name);
+            localStorage.setItem('authPassword', password);
+        }
+    }, {
+        key: 'deleteCredentials',
+        value: function deleteCredentials() {
+            if (!localStorage) return;
+            localStorage.removeItem('authName');
+            localStorage.removeItem('authPassword');
+        }
+    }, {
+        key: 'encryptData',
+        value: function encryptData(userInfo) {
+            return btoa(userInfo.name + ':' + userInfo.password);
+        }
+    }, {
+        key: 'gatherUserInfo',
+        value: function gatherUserInfo() {
+            var name = document.getElementById('loginReg').value;
+            var password = document.getElementById('passwordReg').value;
+            var checkPassword = document.getElementById('repeatedPassword').value;
+            var email = document.getElementById('emailReg').value;
+            var secretQuestion = document.getElementById('secretQuestionReg').value;
+            var secretAnswer = document.getElementById('secretAnswerReg').value;
+            if (!name || !password || !checkPassword || !email || !secretQuestion || !secretAnswer) {
+                throw new Error('All fields required');
+            }
+            if (password !== checkPassword) {
+                throw new Error('Passwords are different');
+            }
+            var encryptedAuthorizationData = this.encryptData({
+                name: name,
+                password: password
+            });
+            return {
+                encryptedAuthorizationData: encryptedAuthorizationData,
+                email: email,
+                secretQuestion: secretQuestion,
+                secretAnswer: secretAnswer
+            };
+        }
+    }]);
+
+    return _class;
+}();
+
+exports.default = _class;
+
+},{}],12:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by tup1tsa on 11.08.2016.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _getWordsList = require('../AjaxRequests/getWordsList');
+
+var _getWordsList2 = _interopRequireDefault(_getWordsList);
+
+var _savedYandexTranslation = require('../AjaxRequests/savedYandexTranslation');
+
+var _savedYandexTranslation2 = _interopRequireDefault(_savedYandexTranslation);
+
+var _yandex = require('../Model/Parse/yandex');
+
+var _yandex2 = _interopRequireDefault(_yandex);
+
+var _learnMachineView = require('../View/learnMachineView');
+
+var _learnMachineView2 = _interopRequireDefault(_learnMachineView);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _class = function () {
+    function _class() {
+        _classCallCheck(this, _class);
+
+        this.correctAnswers = [];
+        this.allWords = [];
+    }
+
+    _createClass(_class, [{
+        key: 'setUserData',
+        value: function setUserData(data) {
+            this.userData = data;
+        }
+    }, {
+        key: 'getAllWords',
+        value: function getAllWords() {
+            var _this = this;
+
+            (0, _getWordsList2.default)().then(function (data) {
+                _this.allWords = data;
+            }, function (err) {
+                throw err;
+            });
+        }
+    }, {
+        key: 'getQuestion',
+        value: function getQuestion() {
+            var nextWordNumber = void 0;
+            if (this.userData.options.order === 'random') {
+                nextWordNumber = this.findNextRandomWordNumber();
+            } else {
+                nextWordNumber = this.userData.currentWord + 1;
+            }
+        }
+    }, {
+        key: 'findNextRandomWordNumber',
+        value: function findNextRandomWordNumber() {
+            var number = Math.ceil(Math.random() * this.userData.options.lastWord);
+            var isKnown = this.userData.knownWords.filter(function (wordNumber) {
+                if (number === wordNumber) {
+                    return wordNumber;
+                }
+            });
+            var isLearning = this.userData.learningPool.filter(function (word) {
+                if (word.number === number) {
+                    return word;
+                }
+            });
+            if (isKnown.length === 0 && isLearning.length === 0) {
+                return number;
+            } else {
+                return this.findNextRandomWordNumber();
+            }
+        }
+    }, {
+        key: 'checkAnswer',
+        value: function checkAnswer() {
+            var userAnswer = document.getElementById('answerWord').value;
+            if (this.correctAnswers.indexOf(userAnswer) !== -1) {
+                console.log('answer is correct');
+            } else {
+                console.log('answer is incorrect');
+            }
+        }
+    }, {
+        key: 'sendQuestion',
+        value: function sendQuestion() {
+            var wordNumber = Math.ceil(Math.random() * 1000);
+            var word = this.allWords[wordNumber].word;
+            this.getAnswer(word);
+            _learnMachineView2.default.showQuestion(word);
+        }
+    }, {
+        key: 'getAnswer',
+        value: function getAnswer(word) {
+            var _this2 = this;
+
+            (0, _savedYandexTranslation2.default)(word).then(function (data) {
+                var parse = new _yandex2.default(data);
+                _this2.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
+            }, function (err) {
+                throw err;
+            });
+        }
+    }, {
+        key: 'showUserData',
+        value: function showUserData() {
+            console.log(this.userData);
+        }
+    }]);
+
+    return _class;
+}();
+
+// todo - view is changing by model, not controller.
+
+
+exports.default = _class;
+
+},{"../AjaxRequests/getWordsList":2,"../AjaxRequests/savedYandexTranslation":7,"../Model/Parse/yandex":10,"../View/learnMachineView":16}],13:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.saveOptions = saveOptions;
+exports.getData = getData;
+/**
+ * Created by tup1tsa on 21.08.2016.
+ */
+function saveOptions(firstWord, lastWord, order) {
+    var data = getData();
+    if (!data) {
+        data = {
+            options: {
+                firstWord: firstWord,
+                lastWord: lastWord,
+                order: order
+            },
+            learningPool: [],
+            knownWords: []
+        };
+        if (order === 'sequential') {
+            data.currentWord = 1;
+        } else if (order === 'random') {
+            data.currentWord = Math.ceil(Math.random() * data.options.lastWord);
+        }
+        localStorage.setItem('learnWords', JSON.stringify(data));
+    } else {
+        throw new Error('Data already set');
+    }
+}
+
+function getData() {
+    var jsonData = localStorage.getItem('learnWords');
+    if (jsonData) {
+        try {
+            var data = JSON.parse(jsonData);
+        } catch (err) {
+            throw new Error('Not correct JSON in local storage');
+        }
+        return data;
+    }
+}
+
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1061,7 +1138,7 @@ exports.default = function (response) {
     }
 };
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1125,7 +1202,7 @@ function hideAll() {
     });
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1145,6 +1222,16 @@ var _class = function () {
     }
 
     _createClass(_class, null, [{
+        key: 'hidePreferences',
+        value: function hidePreferences() {
+            document.getElementById('preferences').style.display = 'none';
+        }
+    }, {
+        key: 'showLearningForm',
+        value: function showLearningForm() {
+            document.getElementById('words').style.display = 'block';
+        }
+    }, {
         key: 'showQuestion',
         value: function showQuestion(word) {
             document.getElementById('questionedWord').textContent = word;
@@ -1162,7 +1249,7 @@ var _class = function () {
 
 exports.default = _class;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1204,10 +1291,12 @@ function google(data) {
     document.getElementById('dictionaryBox').innerHTML = grammar + definitions + webDefinition;
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _learningMachine = require('./Model/learningMachine');
+
+var _learningMachine2 = _interopRequireDefault(_learningMachine);
 
 var _yandexApi = require('./AjaxRequests/yandexApi');
 
@@ -1231,11 +1320,11 @@ var _login2 = _interopRequireDefault(_login);
 
 var _resetPassword = require('./AjaxRequests/resetPassword');
 
-var _yandex = require('./Parse/yandex');
+var _yandex = require('./Model/Parse/yandex');
 
 var _yandex2 = _interopRequireDefault(_yandex);
 
-var _google = require('./Parse/google');
+var _google = require('./Model/Parse/google');
 
 var _google2 = _interopRequireDefault(_google);
 
@@ -1243,168 +1332,151 @@ var _authentication = require('./Model/authentication.js');
 
 var _authentication2 = _interopRequireDefault(_authentication);
 
-var _learningMachine = require('./Model/learningMachine');
-
-var _learningMachine2 = _interopRequireDefault(_learningMachine);
+var _storage = require('./Model/storage');
 
 var _translations = require('./View/translations');
 
 var _authForm = require('./View/authForm');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _learnMachineView = require('./View/learnMachineView');
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _learnMachineView2 = _interopRequireDefault(_learnMachineView);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //todo -  add sound (when u guessed right answer) from fallout4, add authentication (to save user progress)
 require('whatwg-fetch');
 
-var Controller = function () {
-    function Controller() {
-        _classCallCheck(this, Controller);
-    }
-
-    _createClass(Controller, null, [{
-        key: 'getTranslation',
-        value: function getTranslation() {
-            var word = document.getElementById('word').value;
-            if (!word) return;
-            (0, _savedYandexTranslation2.default)(word).then(function (data) {
-                var parse = new _yandex2.default(data);
-                (0, _translations.yandex)(parse.getData());
-            }, function (err) {
-                if (err.status === 404) {
-                    (0, _yandexApi2.default)(word).then(function (data) {
-                        var parse = new _yandex2.default(data);
-                        (0, _translations.yandex)(parse.getData());
-                    });
-                }
-            });
-        }
-    }, {
-        key: 'getMeaning',
-        value: function getMeaning() {
-            var word = document.getElementById('word').value;
-            if (!word) return;
-            (0, _googleApi2.default)(word).then(function (data) {
-                var parse = new _google2.default(data);
-                (0, _translations.google)(parse.getData());
-            });
-        }
-    }, {
-        key: 'register',
-        value: function register() {
-            var auth = new _authentication2.default();
-            var errors = false;
-            try {
-                var userInfo = auth.gatherUserInfo();
-            } catch (err) {
-                (0, _authForm.showNotification)(err.message, 'brown');
-                errors = true;
-            }
-            if (errors) return;
-            (0, _registration2.default)(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer).then(function () {
-                var userInfo = auth.findLocalAuthData();
-                auth.saveCredentials(userInfo.name, userInfo.password);
-                (0, _authForm.showUserInfoBlock)(userInfo.name);
-            }, function (err) {
-                (0, _authForm.showNotification)(err.message, 'brown');
-            });
-        }
-    }, {
-        key: 'login',
-        value: function login() {
-            return new Promise(function (resolve, reject) {
-                var auth = new _authentication2.default();
-                try {
-                    var userInfo = auth.findLocalAuthData();
-                } catch (err) {
-                    (0, _authForm.showNotification)(err.message, 'brown');
-                    reject(err.message);
-                }
-                (0, _login2.default)(auth.encryptData(userInfo)).then(function (result) {
-                    auth.saveCredentials(userInfo.name, userInfo.password);
-                    (0, _authForm.showUserInfoBlock)(userInfo.name);
-                    resolve(result);
-                }, function (err) {
-                    (0, _authForm.showNotification)(err.message, 'brown');
-                    reject(err.message);
-                });
-            });
-        }
-    }, {
-        key: 'logOut',
-        value: function logOut() {
-            var auth = new _authentication2.default();
-            auth.deleteCredentials();
-            (0, _authForm.logOut)();
-        }
-    }, {
-        key: 'getSecretQuestion',
-        value: function getSecretQuestion() {
-            var login = document.getElementById('loginReset').value;
-            var email = document.getElementById('emailReset').value;
-            (0, _resetPassword.getSecretQuestion)(login, email).then(function (secretQuestion) {
-                document.getElementById('secretQuestionReset').innerText = secretQuestion;
-            }, function (err) {
-                (0, _authForm.showNotification)(err, 'brown');
-            });
-        }
-    }, {
-        key: 'sendSecretQuestion',
-        value: function sendSecretQuestion() {
-            var login = document.getElementById('loginReset').value;
-            var email = document.getElementById('emailReset').value;
-            var answer = document.getElementById('secretAnswerReset').value;
-            if (!((login || email) && answer)) {
-                (0, _authForm.showNotification)('Enter login or email and secret answer', 'brown');
-                return;
-            }
-            (0, _resetPassword.sendSecretAnswer)(login, email, answer).then(function (response) {
-                (0, _authForm.showNotification)(response);
-            }, function (err) {
-                (0, _authForm.showNotification)(err, 'brown');
-            });
-        }
-    }, {
-        key: 'listenButtons',
-        value: function listenButtons() {
-            document.getElementById("getMeaning").onclick = Controller.getMeaning;
-            document.getElementById("getTranslation").onclick = Controller.getTranslation;
-            document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
-            document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
-            document.getElementById('loginBtn').onclick = Controller.login;
-            document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
-            document.getElementById('endRegistration').onclick = Controller.register;
-            document.getElementById('logOut').onclick = Controller.logOut;
-            document.getElementById('resetPasswordStart').onclick = _authForm.showResetPasswordBlock;
-            document.getElementById('getSecretQuestion').onclick = Controller.getSecretQuestion;
-            document.getElementById('resetPasswordFinish').onclick = Controller.sendSecretQuestion;
-        }
-    }]);
-
-    return Controller;
-}();
 
 var learningMachine = new _learningMachine2.default();
 learningMachine.getAllWords();
 
-window.onload = function () {
-
-    Controller.listenButtons();
-    Controller.login().then(function () {
-        (0, _authForm.showAuthForm)();
-    }, function () {
-        (0, _authForm.showAuthForm)();
-        (0, _authForm.showLogin)();
-        (0, _authForm.hideNotification)();
-    });
-
-    setTimeout(function () {
-        learningMachine.sendQuestion();
-    }, 200);
+var controller = {
+    getTranslation: function getTranslation() {
+        var word = document.getElementById('word').value;
+        if (!word) return;
+        (0, _savedYandexTranslation2.default)(word).then(function (data) {
+            var parse = new _yandex2.default(data);
+            (0, _translations.yandex)(parse.getData());
+        }, function (err) {
+            if (err.status === 404) {
+                (0, _yandexApi2.default)(word).then(function (data) {
+                    var parse = new _yandex2.default(data);
+                    (0, _translations.yandex)(parse.getData());
+                });
+            }
+        });
+    },
+    getMeaning: function getMeaning() {
+        var word = document.getElementById('word').value;
+        if (!word) return;
+        (0, _googleApi2.default)(word).then(function (data) {
+            var parse = new _google2.default(data);
+            (0, _translations.google)(parse.getData());
+        });
+    },
+    startLearning: function startLearning() {
+        var lastWord = parseInt(document.getElementById('maxRange').value);
+        var firstWord = parseInt(document.getElementById('minRange').value);
+        var orderValue = document.getElementById('order').value;
+        if (firstWord < 0 || lastWord > 25000) {
+            throw new Error('range of words is not correct');
+        }
+        if (!(orderValue === 'random' || orderValue === 'sequential')) {
+            throw new Error('Order is not correct');
+        }
+        learningMachine.setUserData((0, _storage.getData)());
+        (0, _storage.saveOptions)(firstWord, lastWord, orderValue);
+    },
+    register: function register() {
+        var auth = new _authentication2.default();
+        var errors = false;
+        try {
+            var userInfo = auth.gatherUserInfo();
+        } catch (err) {
+            (0, _authForm.showNotification)(err.message, 'brown');
+            errors = true;
+        }
+        if (errors) return;
+        (0, _registration2.default)(userInfo.encryptedAuthorizationData, userInfo.email, userInfo.secretQuestion, userInfo.secretAnswer).then(function () {
+            var userInfo = auth.findLocalAuthData();
+            auth.saveCredentials(userInfo.name, userInfo.password);
+            (0, _authForm.showUserInfoBlock)(userInfo.name);
+        }, function (err) {
+            (0, _authForm.showNotification)(err.message, 'brown');
+        });
+    },
+    login: function login() {
+        return new Promise(function (resolve, reject) {
+            var auth = new _authentication2.default();
+            try {
+                var userInfo = auth.findLocalAuthData();
+            } catch (err) {
+                (0, _authForm.showNotification)(err.message, 'brown');
+                reject(err.message);
+            }
+            (0, _login2.default)(auth.encryptData(userInfo)).then(function (result) {
+                auth.saveCredentials(userInfo.name, userInfo.password);
+                (0, _authForm.showUserInfoBlock)(userInfo.name);
+                resolve(result);
+            }, function (err) {
+                (0, _authForm.showNotification)(err.message, 'brown');
+                reject(err.message);
+            });
+        });
+    },
+    logOut: function logOut() {
+        var auth = new _authentication2.default();
+        auth.deleteCredentials();
+        (0, _authForm.logOut)();
+    },
+    getSecretQuestion: function getSecretQuestion() {
+        var login = document.getElementById('loginReset').value;
+        var email = document.getElementById('emailReset').value;
+        (0, _resetPassword.getSecretQuestion)(login, email).then(function (secretQuestion) {
+            document.getElementById('secretQuestionReset').innerText = secretQuestion;
+        }, function (err) {
+            (0, _authForm.showNotification)(err, 'brown');
+        });
+    },
+    sendSecretQuestion: function sendSecretQuestion() {
+        var login = document.getElementById('loginReset').value;
+        var email = document.getElementById('emailReset').value;
+        var answer = document.getElementById('secretAnswerReset').value;
+        if (!((login || email) && answer)) {
+            (0, _authForm.showNotification)('Enter login or email and secret answer', 'brown');
+            return;
+        }
+        (0, _resetPassword.sendSecretAnswer)(login, email, answer).then(function (response) {
+            (0, _authForm.showNotification)(response);
+        }, function (err) {
+            (0, _authForm.showNotification)(err, 'brown');
+        });
+    },
+    listenButtons: function listenButtons() {
+        document.getElementById("getMeaning").onclick = this.getMeaning;
+        document.getElementById("getTranslation").onclick = this.getTranslation;
+        document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
+        document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
+        document.getElementById("startLearning").onclick = this.startLearning;
+        document.getElementById('loginBtn').onclick = this.login;
+        document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
+        document.getElementById('endRegistration').onclick = this.register;
+        document.getElementById('logOut').onclick = this.logOut;
+        document.getElementById('resetPasswordStart').onclick = _authForm.showResetPasswordBlock;
+        document.getElementById('getSecretQuestion').onclick = this.getSecretQuestion;
+        document.getElementById('resetPasswordFinish').onclick = this.sendSecretQuestion;
+        document.getElementById('showUserData').onclick = learningMachine.showUserData.bind(learningMachine);
+    }
 };
 
-},{"./AjaxRequests/googleApi":3,"./AjaxRequests/login":4,"./AjaxRequests/registration":5,"./AjaxRequests/resetPassword":6,"./AjaxRequests/savedYandexTranslation":7,"./AjaxRequests/yandexApi":8,"./Model/authentication.js":9,"./Model/learningMachine":10,"./Parse/google":11,"./Parse/yandex":12,"./View/authForm":14,"./View/translations":16,"whatwg-fetch":1}]},{},[17])
+window.onload = function () {
+
+    controller.listenButtons();
+    controller.startLearning();
+};
+
+},{"./AjaxRequests/googleApi":3,"./AjaxRequests/login":4,"./AjaxRequests/registration":5,"./AjaxRequests/resetPassword":6,"./AjaxRequests/savedYandexTranslation":7,"./AjaxRequests/yandexApi":8,"./Model/Parse/google":9,"./Model/Parse/yandex":10,"./Model/authentication.js":11,"./Model/learningMachine":12,"./Model/storage":13,"./View/authForm":15,"./View/learnMachineView":16,"./View/translations":17,"whatwg-fetch":1}]},{},[18])
 
 
 //# sourceMappingURL=main.compiled.js.map

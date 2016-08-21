@@ -3,6 +3,13 @@
  */
 export default class {
 
+    static hidePreferences () {
+        document.getElementById('preferences').style.display = 'none'
+    }
+    
+    static showLearningForm () {
+        document.getElementById('words').style.display = 'block'
+    }
 
     static showQuestion (word) {
         document.getElementById('questionedWord').textContent = word

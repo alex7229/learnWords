@@ -57,13 +57,30 @@
 </form>
 <button type="button" id="getTranslation">get yandex translation</button>
 <button type="button" id="getMeaning">get google definition (only in english)</button><br>
-<p id="question">What does word '<b><span id="questionedWord"></span></b>' mean?</p>
-<form>
-    <label for="answerWord">Type your answer</label><br>
-    <input type="text" id="answerWord">
-</form>
-<button id="checkAnswer" type="button">Send answer (or click enter)</button>
-<button id = "sendQuestion">Get another question</button>
+<div id="learning">
+    <form id="preferences">
+        <p>Choose range of words (from word with number <input type="number" id="minRange" min="1"> to <input type="number" id="maxRange" max="25000"> number)<br></p>
+        <label for="order">Choose words order (random or from easier to more difficult)</label>
+        <select id="order">
+            <option value="random">random</option>
+            <option value="sequential">sequential</option>
+        </select><br>
+        <button id="startLearning" type="button">Let's start</button>
+    </form>
+    <div id="words">
+        <p id="question">What does word '<b><span id="questionedWord"></span></b>' mean?</p>
+        <form>
+            <label for="answerWord">Type your answer</label><br>
+            <input type="text" id="answerWord">
+        </form>
+        <button id="checkAnswer" type="button">Send answer (or click enter)</button>
+        <button id = "sendQuestion">Get another question</button><br>
+        <button id="showUserData" type="button">Show userData</button>
+    </div>
+</div>
+
+
+
 <div id="translationBox"></div>
 <div id="dictionaryBox"></div>
 </body>
