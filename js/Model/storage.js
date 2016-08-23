@@ -11,12 +11,11 @@ export function saveOptions(firstWord, lastWord, order) {
                 order
             },
             learningPool: [],
-            knownWords: []
+            knownWords: [],
+            currentWord: 1
         };
-        if (order === 'sequential') {
-            data.currentWord = 1
-        } else if (order === 'random') {
-            data.currentWord = Math.ceil(Math.random()*data.options.lastWord)
+        if (order === 'random') {
+            data.currentWord = Math.ceil(Math.random() * data.options.lastWord)
         }
         localStorage.setItem('learnWords', JSON.stringify(data))
     } else {
@@ -34,4 +33,9 @@ export function getData () {
         }
         return data
     }
+}
+
+export function saveSession (userData) {
+    const jsonData = JSON.stringify(userData);
+    localStorage.setItem('learnWords', jsonData)
 }

@@ -10,21 +10,20 @@ import {getSecretQuestion as fetchGetQuestion, sendSecretAnswer as fetchSendAnsw
 import YandexParse from './Model/Parse/yandex'
 import GoogleParse from './Model/Parse/google'
 import Auth from './Model/authentication.js'
-import {getData as storageGetData, saveOptions as storageSaveOptions} from './Model/storage'
+import {getData as storageGetData, saveOptions as storageSaveOptions, saveSession} from './Model/storage'
 import {yandex as yandexView, google as googleView} from './View/translations'
 import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNotification, showUserInfoBlock, showLogin, showAuthForm, logOut as viewLogOut} from './View/authForm'
-import learnMachineView from './View/learnMachineView'
+import LearnMachineView from './View/learnMachineView'
 
 
 
 
 var learningMachine = new LearnMachine();
-learningMachine.getAllWords();
 
 const controller = {
 
-    getTranslation() {
-        const word = document.getElementById('word').value;
+    getYandexTranslation() {
+        const word = document.getElementById('questionedWord').innerText;
         if ((!word)) return;
         savedYandexTranslation(word)
             .then(data => {
@@ -41,14 +40,19 @@ const controller = {
             })
     },
 
-    getMeaning() {
-        const word = document.getElementById('word').value;
+    getGoogleMeaning() {
+        const word = document.getElementById('questionedWord').innerText;
         if ((!word)) return;
         googleApi(word)
             .then(data => {
                 const parse = new GoogleParse(data);
                 googleView(parse.getData());
             })
+    },
+
+    showPureAnswers () {
+        const answers = learningMachine.getPureAnswerList();
+        LearnMachineView.showPureAnswers(answers);
     },
 
     startLearning () {
@@ -62,11 +66,60 @@ const controller = {
             throw new Error('Order is not correct')
         }
         learningMachine.setUserData(storageGetData());
-        storageSaveOptions(firstWord, lastWord, orderValue);
+        try {
+            storageSaveOptions(firstWord, lastWord, orderValue);
+        } catch (err) {
+            console.log(err)
+        }
+    },
 
+    getQuestion () {
+        learningMachine.getQuestion()
+            .then((questionWord) => {
+                const number = learningMachine.getCurrentNumber();
+                const wordInPool = learningMachine.findWordInPool(number);
+                if (wordInPool) {
+                    LearnMachineView.showStatistics(wordInPool)
+                } else {
+                    LearnMachineView.showStatistics('U see that word for first time')
+                }
+                LearnMachineView.showQuestion(questionWord)
+            })
 
     },
 
+    startLearnWord () {
+        const number = learningMachine.getCurrentNumber();
+        if (learningMachine.findWordInPool(number)) {
+            learningMachine.updateWordInPool(number, false)
+        } else {
+            learningMachine.addWordToPool();
+        }
+        learningMachine.setNextWordNumber();
+        this.getQuestion()
+    },
+    
+    tryToGuessWord() {
+        const word = document.getElementById('answerWord').value;
+        if (learningMachine.checkAnswer(word)) {
+            this.getQuestion()
+        }
+    },
+
+    skipWord () {
+        learningMachine.skipWord();
+        this.getQuestion();
+    },
+    
+    endSession () {
+        const userData = learningMachine.getUserData();
+        saveSession(userData)
+    },
+
+    
+    
+    
+    
     register () {
         const auth = new Auth();
         let errors = false;
@@ -144,11 +197,17 @@ const controller = {
     },
 
     listenButtons () {
-        document.getElementById("getMeaning").onclick = this.getMeaning;
-        document.getElementById("getTranslation").onclick = this.getTranslation;
-        document.getElementById("checkAnswer").onclick = learningMachine.checkAnswer.bind(learningMachine);
-        document.getElementById("sendQuestion").onclick = learningMachine.sendQuestion.bind(learningMachine);
-        document.getElementById("startLearning").onclick = this.startLearning;
+        document.getElementById("checkAnswer").onclick = this.tryToGuessWord.bind(this);
+        document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
+        document.getElementById("startLearning").onclick = this.startLearning.bind(this);
+        document.getElementById('showUserData').onclick = learningMachine.getUserData.bind(learningMachine);
+        document.getElementById("endSession").onclick = this.endSession.bind(this);
+        document.getElementById('skipWord').onclick = this.skipWord.bind(this);
+        document.getElementById('yandexApi').onclick = this.getYandexTranslation;
+        document.getElementById('googleApi').onclick = this.getGoogleMeaning;
+        document.getElementById('pureAnswers').onclick = this.showPureAnswers;
+        document.getElementById('insertNumber').onclick = learningMachine.setNextWordNumberStraight.bind(learningMachine);
+
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
         document.getElementById('endRegistration').onclick = this.register;
@@ -156,7 +215,6 @@ const controller = {
         document.getElementById('resetPasswordStart').onclick = showResetPasswordBlock;
         document.getElementById('getSecretQuestion').onclick = this.getSecretQuestion;
         document.getElementById('resetPasswordFinish').onclick = this.sendSecretQuestion;
-        document.getElementById('showUserData').onclick = learningMachine.showUserData.bind(learningMachine);
     }
 };
  
@@ -171,6 +229,10 @@ const controller = {
      
      controller.listenButtons();
      controller.startLearning();
+     learningMachine.downloadWords()
+         .then(() => {
+             controller.getQuestion()
+         })
 
      
  };

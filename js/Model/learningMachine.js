@@ -17,72 +17,198 @@ export default class  {
         this.userData = data
     }
 
-    getAllWords () {
-        getWordsList()
-            .then(data => {
-                this.allWords = data
-            }, err => {
-                throw err
-            })
+    downloadWords () {
+        return new Promise( (resolve, reject) => {
+            getWordsList()
+                .then(data => {
+                    this.allWords = data;
+                    resolve(true)
+                }, err => {
+                    reject(err)
+                })
+        })
+    }
+    
+    checkWordsList () {
+        if (this.allWords.length>1) {
+            return true
+        }
+    }
+    
+    getCurrentNumber () {
+        return this.userData.currentWord;
     }
 
-    getQuestion () {
-        let nextWordNumber;
+    setNextWordNumber () {
+        let self = this;
+        let nextWordNumber = this.findFirstReadyWordFromPool();
+        if (nextWordNumber) return;
         if (this.userData.options.order === 'random') {
-            nextWordNumber = this.findNextRandomWordNumber()
+            nextWordNumber = findNextRandomWordNumber()
         } else {
             nextWordNumber = this.userData.currentWord + 1
         }
-        
+        this.userData.currentWord = nextWordNumber;
+
+        function findNextRandomWordNumber() {
+            let number = Math.ceil(Math.random() * self.userData.options.lastWord);
+            if ((!self.findWordInKnownList(number)) && (!self.findWordInPool(number))) {
+                return number
+            } else {
+                return findNextRandomWordNumber()
+            }
+        }
     }
-    
-    findNextRandomWordNumber () {
-        let number = Math.ceil(Math.random()*this.userData.options.lastWord);
-        let isKnown = this.userData.knownWords.filter(wordNumber => {
-            if (number === wordNumber) {
-                return wordNumber
+
+    findWordInKnownList (number) {
+        let currentWord = this.userData.knownWords.filter(wordNumber => {
+            if (wordNumber === number) {
+                return number
             }
         });
-        let isLearning = this.userData.learningPool.filter(word => {
-            if (word.number === number) {
+        if (currentWord.length === 1) {
+            return true
+        }
+    }
+
+    findWordInPool (wordNumber) {
+        let currentWord = this.userData.learningPool.filter(word => {
+            if (word.number == wordNumber) {
                 return word
             }
         });
-        if (isKnown.length === 0 && isLearning.length === 0) {
-            return number
+        if (currentWord.length === 1) {
+            return currentWord[0]
+        }
+        console.log(wordNumber);
+        console.log(currentWord);
+        console.log(this.userData.learningPool);
+    }
+    
+    getPureAnswerList () {
+        return this.correctAnswers;
+    }
+
+    checkAnswer (answer) {
+        const number = this.userData.currentWord;
+        if (this.correctAnswers.includes(answer)) {
+            console.log('correct answer');
+            if (this.findWordInPool(this.userData.currentWord)) {
+                console.log('word is in pool');
+                this.updateWordInPool(number, true);
+            } else {
+                console.log('word is not in pool');
+                this.userData.knownWords.push(number);
+            }
+            this.setNextWordNumber();
+            return true
         } else {
-            return this.findNextRandomWordNumber()
+            console.log('incorrect answer');
+            return false
+        }
+    }
+    
+    skipWord() {
+        this.userData.knownWords.push(this.userData.currentWord);
+        this.setNextWordNumber();
+    }
+
+    addWordToPool () {
+        const sixHours = 6*60*60*1000;
+        const currentTime = new Date().getTime();
+        const word = {
+            number: this.userData.currentWord,
+            successGuesses: 0,
+            lastGuessTime: currentTime,
+            nextGuessTime: currentTime + sixHours
+        };
+        this.userData.learningPool.push(word)
+    }
+
+    showPool () {
+        const wholePool = this.userData.learningPool;
+        const readyPool = wholePool.filter(wordData => {
+            if (wordData.successGuesses<10 && wordData.nextGuessTime<time) {
+                return wordData
+            }
+        });
+        console.log(wholePool);
+        console.log(readyPool)
+        
+    }
+
+    updateWordInPool (wordNumber, successGuess) {
+        let word = this.findWordInPool(wordNumber);
+        const currentTime = new Date().getTime();
+        word.lastGuessTime = currentTime;
+        if (successGuess) {
+            word.successGuesses++;
+            const currentAttempt = word.successGuesses;
+            let delay;
+            if (currentAttempt<=3) {
+                delay = 6*60*60*1000;
+            } else if (currentAttempt>3 && currentAttempt<7) {
+                delay = 24*60*60*1000
+            } else if (currentAttempt>=7) {
+                delay = 3*24*60*60*1000
+            }
+            word.nextGuessTime = currentTime + delay
+        } else {
+            word.successGuesses = 0;
+            const delay = 6*60*60*1000;
+            word.nextGuessTime = currentTime+delay
         }
     }
 
-    checkAnswer () {
-        const userAnswer = document.getElementById('answerWord').value;
-        if (this.correctAnswers.includes(userAnswer)) {
-            console.log('answer is correct')
-        } else {
-            console.log('answer is incorrect')
+    findFirstReadyWordFromPool () {
+        const time = new Date().getTime();
+        let readyWords = this.userData.learningPool.filter(wordData => {
+            if (wordData.successGuesses<10 && wordData.nextGuessTime<time) {
+                return wordData.number
+            }
+        });
+        if (readyWords.length>0) {
+            return readyWords[0]
         }
     }
 
-    sendQuestion () {
-        const wordNumber = Math.ceil(Math.random()*1000);
-        const word = this.allWords[wordNumber].word;
-        this.getAnswer(word);
-        View.showQuestion(word)
+    getQuestion () {
+        return new Promise ((resolve, reject) => {
+            console.log(this.userData);
+            const wordNumber = this.userData.currentWord;
+            const word = this.allWords[wordNumber].word;
+            this.getAnswer(word)
+                .then(() => {
+                    resolve(word)
+                }, err => {
+                    reject (err)
+                })
+        })
+        
     }
 
     getAnswer (word) {
-        getSavedYandexWordTranslation(word)
-            .then(data => {
-                const parse = new YandexParse(data);
-                this.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
-            }, err => {
-                throw err
-            })
+        return new Promise ((resolve, reject) => {
+            getSavedYandexWordTranslation(word)
+                .then(data => {
+                    const parse = new YandexParse(data);
+                    this.correctAnswers = parse.findCorrectAnswers(parse.getData(data));
+                    resolve(this.correctAnswers)
+                }, err => {
+                    reject(err)
+                })
+        })
+        
     }
     
-    showUserData () {
-        console.log(this.userData)
+    getUserData () {
+        console.log(this.userData);
+        return this.userData;
+    }
+
+    setNextWordNumberStraight () {
+        const number = document.getElementById('straightNumber').value;
+        this.userData.currentWord = number
     }
 
 
