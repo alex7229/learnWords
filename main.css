@@ -47,3 +47,9 @@ input[type='number'] {
     position: relative;
     top: 50px;
 }
+#fullReset {
+    display: none;
+}
+#advancedButtons {
+    display: block
+}

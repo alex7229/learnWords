@@ -51,12 +51,6 @@
 </div>
 
 
-<!--<form>
-    <label for="word">type word for search</label><br>
-    <input type="text" id="word">
-</form>
-<button type="button" id="getTranslation">get yandex translation</button>
-<button type="button" id="getMeaning">get google definition (only in english)</button><br>-->
 <div id="learning">
     <form id="preferences">
         <p>Choose range of words (from word with number <input type="number" id="minRange" min="1" value="1"> to <input type="number" id="maxRange" max="25000" value="10000"> number)<br></p>
@@ -72,22 +66,23 @@
         <p id="statistics"></p>
 
 
-        <!--<p id="question">What does word '<b><span id="questionedWord"></span></b>' mean?</p>-->
-        <form>
+
+        <form onsubmit="return false;">
             <label for="answerWord">Type your answer</label><br>
-            <input type="text" id="answerWord">
+            <input type="text" id="answerWord" autocomplete="off">
         </form>
         <button id="checkAnswer" type="button">I know that word</button>
         <button id="startLearnWord" type="button">I don't know word</button>
         <button id="skipWord" type="button">I don't want to learn that word</button><br>
-        <button id="yandexApi" type="button">Yandex lookup</button>
-        <button id="googleApi" type="button">Google lookup</button>
-        <button id="pureAnswers" type="button">Show pure answers</button><br>
-        <button id="showUserData" type="button">Show userData</button>
-        <button id="endSession" type="button">End sessions (save to storage)</button><br>
-        <input type="number" id="straightNumber">
-        <button id="insertNumber" type="button">Insert straight number</button>
+        <button id="showTranslations" type="button">Show translations</button><br>
+        <div id="advancedButtons">
+            <button id="showUserData" type="button">Show userData</button><br>
+            <input type="number" id="straightNumber">
+            <button id="insertNumber" type="button">Insert straight number</button>
+        </div>
     </div>
+    <div id="learningNotification"></div>
+    <button id="fullReset" type="button">Full reset</button>
 </div>
 
 <div id="wordMeanings">

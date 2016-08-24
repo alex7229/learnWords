@@ -55,36 +55,56 @@ const controller = {
         LearnMachineView.showPureAnswers(answers);
     },
 
+    showAllTranslations () {
+        this.showPureAnswers();
+        this.getYandexTranslation();
+        this.getGoogleMeaning()
+    },
+
     startLearning () {
         const lastWord = parseInt(document.getElementById('maxRange').value);
         const firstWord = parseInt(document.getElementById('minRange').value);
         const orderValue = document.getElementById('order').value;
         if (firstWord < 0 || lastWord > 25000) {
-            throw new Error('range of words is not correct')
+            LearnMachineView.showNotification('range of words is not correct');
+            return
         }
         if (!((orderValue === 'random') || (orderValue === 'sequential'))) {
-            throw new Error('Order is not correct')
+            LearnMachineView.showNotification('Order is not random nor sequential');
+            return
         }
+        storageSaveOptions(firstWord, lastWord, orderValue);
         learningMachine.setUserData(storageGetData());
-        try {
-            storageSaveOptions(firstWord, lastWord, orderValue);
-        } catch (err) {
-            console.log(err)
-        }
+        learningMachine.setNextWordNumber();
+        learningMachine.downloadWords()
+            .then(() => {
+                controller.getQuestion()
+            });
+        LearnMachineView.toggleLearningForm(true);
+        LearnMachineView.togglePreferences(false);
+        LearnMachineView.hideNotification();
     },
 
     getQuestion () {
-        learningMachine.getQuestion()
-            .then((questionWord) => {
-                const number = learningMachine.getCurrentNumber();
-                const wordInPool = learningMachine.findWordInPool(number);
-                if (wordInPool) {
-                    LearnMachineView.showStatistics(wordInPool)
-                } else {
-                    LearnMachineView.showStatistics('U see that word for first time')
-                }
-                LearnMachineView.showQuestion(questionWord)
-            })
+        if (learningMachine.getCurrentNumber()) {
+            learningMachine.getQuestion()
+                .then((questionWord) => {
+                    const number = learningMachine.getCurrentNumber();
+                    const wordInPool = learningMachine.findWordInPool(number);
+                    if (wordInPool) {
+                        LearnMachineView.showStatistics(wordInPool)
+                    } else {
+                        LearnMachineView.showStatistics(`Difficulty is ${(number/25000*100).toFixed(2)}%.<br>U see that word for first time. `)
+                    }
+                    LearnMachineView.showQuestion(questionWord)
+                })
+
+        } else {
+            LearnMachineView.toggleFullResetBtn('on');
+            LearnMachineView.toggleLearningForm(false);
+            LearnMachineView.togglePreferences(false);
+            LearnMachineView.showNotification('There are no words left. Start another learning process');
+        }
 
     },
 
@@ -96,26 +116,43 @@ const controller = {
             learningMachine.addWordToPool();
         }
         learningMachine.setNextWordNumber();
+        saveSession(learningMachine.getUserData());
+        LearnMachineView.clearInput();
+        LearnMachineView.clearTranslations();
         this.getQuestion()
     },
     
     tryToGuessWord() {
         const word = document.getElementById('answerWord').value;
         if (learningMachine.checkAnswer(word)) {
-            this.getQuestion()
+            saveSession(learningMachine.getUserData());
+            LearnMachineView.clearInput();
+            LearnMachineView.clearTranslations();
+            this.getQuestion();
+            LearnMachineView.showNotification('Answer is correct')
+        } else {
+            LearnMachineView.showNotification('Answer is incorrect')
         }
     },
 
     skipWord () {
         learningMachine.skipWord();
+        saveSession(learningMachine.getUserData());
+        LearnMachineView.clearInput();
+        LearnMachineView.clearTranslations();
         this.getQuestion();
     },
-    
-    endSession () {
-        const userData = learningMachine.getUserData();
-        saveSession(userData)
-    },
 
+    fullReset() {
+        localStorage.clear();
+        LearnMachineView.toggleFullResetBtn('off');
+        LearnMachineView.hideNotification();
+        LearnMachineView.togglePreferences(true);
+        LearnMachineView.toggleLearningForm(false);
+    },
+    
+    
+    
     
     
     
@@ -196,17 +233,22 @@ const controller = {
 
     },
 
+    listenKeyboardButtons (elem) {
+        if (elem.keyCode ==13) {
+            this.tryToGuessWord();
+        }
+    },
+
     listenButtons () {
         document.getElementById("checkAnswer").onclick = this.tryToGuessWord.bind(this);
         document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
         document.getElementById("startLearning").onclick = this.startLearning.bind(this);
         document.getElementById('showUserData').onclick = learningMachine.getUserData.bind(learningMachine);
-        document.getElementById("endSession").onclick = this.endSession.bind(this);
         document.getElementById('skipWord').onclick = this.skipWord.bind(this);
-        document.getElementById('yandexApi').onclick = this.getYandexTranslation;
-        document.getElementById('googleApi').onclick = this.getGoogleMeaning;
-        document.getElementById('pureAnswers').onclick = this.showPureAnswers;
+        document.getElementById('showTranslations').onclick = this.showAllTranslations.bind(this);
         document.getElementById('insertNumber').onclick = learningMachine.setNextWordNumberStraight.bind(learningMachine);
+        document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
+        document.getElementById('fullReset').onclick = this.fullReset;
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
@@ -228,13 +270,22 @@ const controller = {
  window.onload = () => {
      
      controller.listenButtons();
-     controller.startLearning();
-     learningMachine.downloadWords()
-         .then(() => {
-             controller.getQuestion()
-         })
+
+     if (localStorage.getItem('learnWords')) {
+         learningMachine.setUserData(storageGetData());
+         learningMachine.downloadWords()
+             .then(() => {
+                 controller.getQuestion()
+             })
+     } else {
+         LearnMachineView.togglePreferences(true);
+         LearnMachineView.toggleLearningForm(false);
+     }
+
+
 
      
  };
 
 
+//todO: if pool is overwhelming - don't add new words; start new learning with options
