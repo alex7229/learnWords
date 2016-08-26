@@ -1105,17 +1105,19 @@ var _class = function () {
             this.userData.learningPool.push(word);
         }
     }, {
-        key: 'showPool',
-        value: function showPool() {
-            var time = new Date().getTime();
-            var wholePool = this.userData.learningPool;
-            var readyPool = wholePool.filter(function (wordData) {
-                if (wordData.successGuesses < 10 && wordData.nextGuessTime < time) {
+        key: 'getPoolLength',
+        value: function getPoolLength(nextGuessTime) {
+            var pool = this.userData.learningPool;
+            return pool.filter(function (wordData) {
+                if (wordData.nextGuessTime <= nextGuessTime) {
                     return wordData;
                 }
-            });
-            console.log(wholePool);
-            console.log(readyPool);
+            }).length;
+        }
+    }, {
+        key: 'getKnownWordsCount',
+        value: function getKnownWordsCount() {
+            return this.userData.knownWords.length;
         }
     }, {
         key: 'updateWordInPool',
@@ -1212,6 +1214,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.saveOptions = saveOptions;
+exports.updateUserData = updateUserData;
 exports.getData = getData;
 exports.saveSession = saveSession;
 /**
@@ -1237,6 +1240,10 @@ function saveOptions(firstWord, lastWord, order) {
     } else {
         throw new Error('Data already set');
     }
+}
+
+function updateUserData(userData) {
+    localStorage.setItem('learnWords', JSON.stringify(userData));
 }
 
 function getData() {
@@ -1365,21 +1372,11 @@ var _class = function () {
     }
 
     _createClass(_class, null, [{
-        key: 'togglePreferences',
-        value: function togglePreferences(state) {
-            var elem = document.getElementById('preferences');
+        key: 'toggleBlock',
+        value: function toggleBlock(id, typeOfBLock, state) {
+            var elem = document.getElementById(id);
             if (state) {
-                elem.style.display = 'block';
-            } else {
-                elem.style.display = 'none';
-            }
-        }
-    }, {
-        key: 'toggleLearningForm',
-        value: function toggleLearningForm(state) {
-            var elem = document.getElementById('words');
-            if (state) {
-                elem.style.display = 'block';
+                elem.style.display = typeOfBLock;
             } else {
                 elem.style.display = 'none';
             }
@@ -1397,8 +1394,8 @@ var _class = function () {
             document.getElementById('questionedWord').textContent = word;
         }
     }, {
-        key: 'showStatistics',
-        value: function showStatistics(data) {
+        key: 'showWordStatistics',
+        value: function showWordStatistics(data) {
             var elem = document.getElementById('statistics');
             if (typeof data === 'string') {
                 elem.innerHTML = data;
@@ -1409,6 +1406,25 @@ var _class = function () {
             }
         }
     }, {
+        key: 'showPoolStatistics',
+        value: function showPoolStatistics(htmlData) {
+            var elem = document.getElementById('poolData');
+            elem.innerHTML = htmlData;
+        }
+    }, {
+        key: 'checkPoolStatisticsDisplayState',
+        value: function checkPoolStatisticsDisplayState() {
+            var elem = document.getElementById('poolData');
+            if (elem.innerHTML.length > 0) {
+                return true;
+            }
+        }
+    }, {
+        key: 'hidePoolData',
+        value: function hidePoolData() {
+            document.getElementById('poolData').innerHTML = '';
+        }
+    }, {
         key: 'clearInput',
         value: function clearInput() {
             document.getElementById('answerWord').value = '';
@@ -1416,9 +1432,31 @@ var _class = function () {
     }, {
         key: 'clearTranslations',
         value: function clearTranslations() {
-            document.querySelectorAll('#pureAnswersBox, #translationBox, #dictionaryBox').forEach(function (elem) {
-                elem.innerHTML = '';
-            });
+            var translations = document.querySelectorAll('#pureAnswersBox, #translationBox, #dictionaryBox');
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = translations[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var elem = _step.value;
+
+                    elem.innerHTML = '';
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
         }
     }, {
         key: 'showNotification',
@@ -1439,14 +1477,44 @@ var _class = function () {
             audio.play();
         }
     }, {
-        key: 'toggleFullResetBtn',
-        value: function toggleFullResetBtn(state) {
-            var elem = document.getElementById('fullReset');
-            if (state === 'on') {
-                elem.style.display = 'inline-block';
-            } else if (state === 'off') {
-                elem.style.display = 'none';
+        key: 'toggleResetButtons',
+        value: function toggleResetButtons(state) {
+            var buttons = document.querySelectorAll('#fullReset, #updateOptions');
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = buttons[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var button = _step2.value;
+
+                    if (state) {
+                        button.style.display = 'inline-block';
+                    } else {
+                        buttons.style.display = 'none';
+                    }
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
             }
+        }
+    }, {
+        key: 'showPreferencesData',
+        value: function showPreferencesData(minRange, maxRange, order) {
+            document.getElementById('minRange').value = minRange;
+            document.getElementById('maxRange').value = maxRange;
+            document.getElementById('order').value = order;
         }
     }]);
 
@@ -1607,9 +1675,9 @@ var controller = {
         learningMachine.downloadWords().then(function () {
             controller.getQuestion();
         });
-        _learnMachineView2.default.toggleLearningForm(true);
-        _learnMachineView2.default.togglePreferences(false);
-        _learnMachineView2.default.hideNotification();
+        _learnMachineView2.default.toggleBlock('words', 'block', true);
+        _learnMachineView2.default.toggleBlock('preferences', 'block', false);
+        _learnMachineView2.default.toggleBlock('learningNotification');
     },
     getQuestion: function getQuestion() {
         if (learningMachine.getCurrentNumber()) {
@@ -1617,17 +1685,21 @@ var controller = {
                 var number = learningMachine.getCurrentNumber();
                 var wordInPool = learningMachine.findWordInPool(number);
                 if (wordInPool) {
-                    _learnMachineView2.default.showStatistics(wordInPool);
+                    _learnMachineView2.default.showWordStatistics(wordInPool);
                 } else {
-                    _learnMachineView2.default.showStatistics('Difficulty is ' + (number / 25000 * 100).toFixed(2) + '%.<br>U see that word for first time. ');
+                    _learnMachineView2.default.showWordStatistics('Difficulty is ' + (number / 25000 * 100).toFixed(2) + '%.<br>U see that word for first time. ');
                 }
                 _learnMachineView2.default.showQuestion(questionWord);
             });
         } else {
-            _learnMachineView2.default.toggleFullResetBtn('on');
-            _learnMachineView2.default.toggleLearningForm(false);
-            _learnMachineView2.default.togglePreferences(false);
-            _learnMachineView2.default.showNotification('There are no words left. Start another learning process');
+            _learnMachineView2.default.toggleBlock('fullReset', 'inline-block', true);
+            _learnMachineView2.default.toggleBlock('updateOptions', 'inline-block', true);
+            _learnMachineView2.default.toggleBlock('words');
+            _learnMachineView2.default.toggleBlock('preferences', 'block', true);
+            _learnMachineView2.default.toggleBlock('startLearning');
+            var userData = learningMachine.getUserData();
+            _learnMachineView2.default.showPreferencesData(userData.options.firstWord, userData.options.lastWord, userData.options.order);
+            _learnMachineView2.default.showNotification('There are no words left. Start another learning process or update range of words (order would be the same).');
         }
     },
     startLearnWord: function startLearnWord() {
@@ -1642,6 +1714,7 @@ var controller = {
         _learnMachineView2.default.clearInput();
         _learnMachineView2.default.clearTranslations();
         this.getQuestion();
+        this.updatePoolStatistics();
     },
     tryToGuessWord: function tryToGuessWord() {
         var word = document.getElementById('answerWord').value;
@@ -1650,6 +1723,7 @@ var controller = {
             _learnMachineView2.default.clearInput();
             _learnMachineView2.default.clearTranslations();
             this.getQuestion();
+            this.updatePoolStatistics();
             _learnMachineView2.default.showNotification('Answer is correct');
         } else {
             _learnMachineView2.default.showNotification('Answer is incorrect');
@@ -1661,13 +1735,61 @@ var controller = {
         _learnMachineView2.default.clearInput();
         _learnMachineView2.default.clearTranslations();
         this.getQuestion();
+        this.updatePoolStatistics();
     },
     fullReset: function fullReset() {
         localStorage.clear();
-        _learnMachineView2.default.toggleFullResetBtn('off');
-        _learnMachineView2.default.hideNotification();
-        _learnMachineView2.default.togglePreferences(true);
-        _learnMachineView2.default.toggleLearningForm(false);
+        _learnMachineView2.default.toggleBlock('fullReset');
+        _learnMachineView2.default.toggleBlock('updateOptions');
+        _learnMachineView2.default.toggleBlock('learningNotification');
+        _learnMachineView2.default.toggleBlock('preferences');
+        _learnMachineView2.default.toggleBlock('startLearning', 'inline-block', true);
+        this.startLearning();
+    },
+    updateUserOptions: function updateUserOptions() {
+        var oldUserData = learningMachine.getUserData();
+        console.log(oldUserData);
+        var newMinRange = parseInt(document.getElementById('minRange').value);
+        var newMaxRange = parseInt(document.getElementById('maxRange').value);
+        var oldMinRange = oldUserData.options.firstWord;
+        var oldMaxRange = oldUserData.options.lastWord;
+        if (newMinRange > oldMinRange) {
+            _learnMachineView2.default.showNotification('Your first word should be equal or less than ' + oldMinRange);
+        } else if (newMaxRange < oldMaxRange) {
+            _learnMachineView2.default.showNotification('Your last word should be equal or more than ' + oldMaxRange);
+        } else if (newMinRange === oldMinRange && newMaxRange === oldMaxRange || !newMinRange || !newMaxRange) {
+            _learnMachineView2.default.showNotification('You should declare new minimum and maximum ranges');
+        } else {
+            var oldStorageData = (0, _storage.getData)();
+            oldStorageData.options.firstWord = newMinRange;
+            oldStorageData.options.lastWord = newMaxRange;
+            (0, _storage.updateUserData)(oldStorageData);
+            _learnMachineView2.default.toggleBlock('startLearning', 'inline-block', true);
+            _learnMachineView2.default.toggleBlock('preferences');
+            _learnMachineView2.default.toggleBlock('fullReset');
+            _learnMachineView2.default.toggleBlock('updateOptions');
+            _learnMachineView2.default.toggleBlock('words', 'block', true);
+            learningMachine.setUserData((0, _storage.getData)());
+            learningMachine.setNextWordNumber();
+            this.getQuestion();
+        }
+    },
+    showUserPool: function showUserPool() {
+        var sixHoursMs = 6 * 3600 * 1000;
+        var dayMs = 24 * 3600 * 1000;
+        var weekMs = 7 * 24 * 3600 * 1000;
+        var currentTime = new Date().getTime();
+        var newWordsCount = learningMachine.getPoolLength(currentTime + sixHoursMs);
+        var mediumWordsCount = learningMachine.getPoolLength(currentTime + dayMs);
+        var oldWordsCount = learningMachine.getPoolLength(currentTime + weekMs);
+        var knownWordsCount = learningMachine.getKnownWordsCount();
+        var data = 'New words: ' + newWordsCount + '.<br>Medium words: ' + mediumWordsCount + '.<br>Old words: ' + oldWordsCount + '.<br>All known words: ' + knownWordsCount;
+        _learnMachineView2.default.showPoolStatistics(data);
+    },
+    updatePoolStatistics: function updatePoolStatistics() {
+        if (_learnMachineView2.default.checkPoolStatisticsDisplayState()) {
+            this.showUserPool();
+        }
     },
     register: function register() {
         var auth = new _authentication2.default();
@@ -1740,15 +1862,16 @@ var controller = {
         }
     },
     listenButtons: function listenButtons() {
-        document.getElementById("checkAnswer").onclick = this.tryToGuessWord.bind(this);
         document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
         document.getElementById("startLearning").onclick = this.startLearning.bind(this);
-        document.getElementById('showUserData').onclick = learningMachine.getUserData.bind(learningMachine);
+        document.getElementById('showUserData').onclick = this.showUserPool;
+        document.getElementById('hideUserData').onclick = _learnMachineView2.default.hidePoolData;
         document.getElementById('skipWord').onclick = this.skipWord.bind(this);
         document.getElementById('showTranslations').onclick = this.showAllTranslations.bind(this);
         document.getElementById('insertNumber').onclick = learningMachine.setNextWordNumberStraight.bind(learningMachine);
         document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
-        document.getElementById('fullReset').onclick = this.fullReset;
+        document.getElementById('fullReset').onclick = this.fullReset.bind(this);
+        document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
@@ -1770,8 +1893,8 @@ window.onload = function () {
             controller.getQuestion();
         });
     } else {
-        _learnMachineView2.default.togglePreferences(true);
-        _learnMachineView2.default.toggleLearningForm(false);
+        _learnMachineView2.default.toggleBlock('preferences', 'block', true);
+        _learnMachineView2.default.toggleBlock('words');
     }
 };
 

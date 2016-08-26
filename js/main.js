@@ -10,7 +10,7 @@ import {getSecretQuestion as fetchGetQuestion, sendSecretAnswer as fetchSendAnsw
 import YandexParse from './Model/Parse/yandex'
 import GoogleParse from './Model/Parse/google'
 import Auth from './Model/authentication.js'
-import {getData as storageGetData, saveOptions as storageSaveOptions, saveSession} from './Model/storage'
+import {getData as storageGetData, saveOptions as storageSaveOptions, saveSession, updateUserData as storageUpdateData} from './Model/storage'
 import {yandex as yandexView, google as googleView} from './View/translations'
 import {showRegistrationBlock, showResetPasswordBlock, showNotification, hideNotification, showUserInfoBlock, showLogin, showAuthForm, logOut as viewLogOut} from './View/authForm'
 import LearnMachineView from './View/learnMachineView'
@@ -80,9 +80,9 @@ const controller = {
             .then(() => {
                 controller.getQuestion()
             });
-        LearnMachineView.toggleLearningForm(true);
-        LearnMachineView.togglePreferences(false);
-        LearnMachineView.hideNotification();
+        LearnMachineView.toggleBlock('words', 'block', true);
+        LearnMachineView.toggleBlock('preferences', 'block', false);
+        LearnMachineView.toggleBlock('learningNotification');
     },
 
     getQuestion () {
@@ -92,18 +92,22 @@ const controller = {
                     const number = learningMachine.getCurrentNumber();
                     const wordInPool = learningMachine.findWordInPool(number);
                     if (wordInPool) {
-                        LearnMachineView.showStatistics(wordInPool)
+                        LearnMachineView.showWordStatistics(wordInPool)
                     } else {
-                        LearnMachineView.showStatistics(`Difficulty is ${(number/25000*100).toFixed(2)}%.<br>U see that word for first time. `)
+                        LearnMachineView.showWordStatistics(`Difficulty is ${(number/25000*100).toFixed(2)}%.<br>U see that word for first time. `)
                     }
                     LearnMachineView.showQuestion(questionWord)
                 })
 
         } else {
-            LearnMachineView.toggleFullResetBtn('on');
-            LearnMachineView.toggleLearningForm(false);
-            LearnMachineView.togglePreferences(false);
-            LearnMachineView.showNotification('There are no words left. Start another learning process');
+            LearnMachineView.toggleBlock('fullReset', 'inline-block', true);
+            LearnMachineView.toggleBlock('updateOptions', 'inline-block', true);
+            LearnMachineView.toggleBlock('words');
+            LearnMachineView.toggleBlock('preferences', 'block', true);
+            LearnMachineView.toggleBlock('startLearning');
+            const userData = learningMachine.getUserData();
+            LearnMachineView.showPreferencesData(userData.options.firstWord, userData.options.lastWord, userData.options.order);
+            LearnMachineView.showNotification('There are no words left. Start another learning process or update range of words (order would be the same).');
         }
 
     },
@@ -119,7 +123,8 @@ const controller = {
         saveSession(learningMachine.getUserData());
         LearnMachineView.clearInput();
         LearnMachineView.clearTranslations();
-        this.getQuestion()
+        this.getQuestion();
+        this.updatePoolStatistics();
     },
     
     tryToGuessWord() {
@@ -129,6 +134,7 @@ const controller = {
             LearnMachineView.clearInput();
             LearnMachineView.clearTranslations();
             this.getQuestion();
+            this.updatePoolStatistics();
             LearnMachineView.showNotification('Answer is correct')
         } else {
             LearnMachineView.showNotification('Answer is incorrect')
@@ -141,14 +147,66 @@ const controller = {
         LearnMachineView.clearInput();
         LearnMachineView.clearTranslations();
         this.getQuestion();
+        this.updatePoolStatistics();
     },
 
     fullReset() {
         localStorage.clear();
-        LearnMachineView.toggleFullResetBtn('off');
-        LearnMachineView.hideNotification();
-        LearnMachineView.togglePreferences(true);
-        LearnMachineView.toggleLearningForm(false);
+        LearnMachineView.toggleBlock('fullReset');
+        LearnMachineView.toggleBlock('updateOptions');
+        LearnMachineView.toggleBlock('learningNotification');
+        LearnMachineView.toggleBlock('preferences');
+        LearnMachineView.toggleBlock('startLearning', 'inline-block', true);
+        this.startLearning();
+    },
+
+    updateUserOptions () {
+        const oldUserData = learningMachine.getUserData();
+        console.log(oldUserData);
+        const newMinRange = parseInt(document.getElementById('minRange').value);
+        const newMaxRange = parseInt(document.getElementById('maxRange').value);
+        const oldMinRange = oldUserData.options.firstWord;
+        const oldMaxRange = oldUserData.options.lastWord;
+        if (newMinRange>oldMinRange) {
+            LearnMachineView.showNotification(`Your first word should be equal or less than ${oldMinRange}`);
+        } else if (newMaxRange<oldMaxRange) {
+            LearnMachineView.showNotification(`Your last word should be equal or more than ${oldMaxRange}`);
+        } else if (((newMinRange === oldMinRange) && (newMaxRange === oldMaxRange)) || (!newMinRange) || (!newMaxRange)) {
+            LearnMachineView.showNotification(`You should declare new minimum and maximum ranges`);
+        }  else {
+            let oldStorageData = storageGetData();
+            oldStorageData.options.firstWord  = newMinRange;
+            oldStorageData.options.lastWord = newMaxRange;
+            storageUpdateData(oldStorageData);
+            LearnMachineView.toggleBlock('startLearning', 'inline-block', true);
+            LearnMachineView.toggleBlock('preferences');
+            LearnMachineView.toggleBlock('fullReset');
+            LearnMachineView.toggleBlock('updateOptions');
+            LearnMachineView.toggleBlock('words', 'block', true);
+            learningMachine.setUserData(storageGetData());
+            learningMachine.setNextWordNumber();
+            this.getQuestion();
+        }
+
+    },
+
+    showUserPool () {
+        const sixHoursMs = 6*3600*1000;
+        const dayMs = 24*3600*1000;
+        const weekMs = 7*24*3600*1000;
+        const currentTime = new Date().getTime();
+        const newWordsCount = learningMachine.getPoolLength(currentTime+sixHoursMs);
+        const mediumWordsCount = learningMachine.getPoolLength(currentTime+dayMs);
+        const oldWordsCount = learningMachine.getPoolLength(currentTime+weekMs);
+        const knownWordsCount = learningMachine.getKnownWordsCount();
+        const data = `New words: ${newWordsCount}.<br>Medium words: ${mediumWordsCount}.<br>Old words: ${oldWordsCount}.<br>All known words: ${knownWordsCount}`;
+        LearnMachineView.showPoolStatistics(data);
+    },
+
+    updatePoolStatistics() {
+      if (LearnMachineView.checkPoolStatisticsDisplayState()) {
+          this.showUserPool()
+      }
     },
     
     
@@ -240,15 +298,16 @@ const controller = {
     },
 
     listenButtons () {
-        document.getElementById("checkAnswer").onclick = this.tryToGuessWord.bind(this);
         document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
         document.getElementById("startLearning").onclick = this.startLearning.bind(this);
-        document.getElementById('showUserData').onclick = learningMachine.getUserData.bind(learningMachine);
+        document.getElementById('showUserData').onclick = this.showUserPool;
+        document.getElementById('hideUserData').onclick = LearnMachineView.hidePoolData;
         document.getElementById('skipWord').onclick = this.skipWord.bind(this);
         document.getElementById('showTranslations').onclick = this.showAllTranslations.bind(this);
         document.getElementById('insertNumber').onclick = learningMachine.setNextWordNumberStraight.bind(learningMachine);
         document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
-        document.getElementById('fullReset').onclick = this.fullReset;
+        document.getElementById('fullReset').onclick = this.fullReset.bind(this);
+        document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
@@ -278,8 +337,8 @@ const controller = {
                  controller.getQuestion()
              })
      } else {
-         LearnMachineView.togglePreferences(true);
-         LearnMachineView.toggleLearningForm(false);
+         LearnMachineView.toggleBlock('preferences', 'block', true);
+         LearnMachineView.toggleBlock('words');
      }
 
 

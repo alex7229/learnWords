@@ -23,6 +23,10 @@ export function saveOptions(firstWord, lastWord, order) {
     }
 }
 
+export function updateUserData(userData) {
+    localStorage.setItem('learnWords', JSON.stringify(userData))
+}
+
 export function getData () {
     const jsonData = localStorage.getItem('learnWords');
     if (jsonData) {

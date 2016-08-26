@@ -130,17 +130,17 @@ export default class  {
         this.userData.learningPool.push(word)
     }
 
-    showPool () {
-        const time = new Date().getTime();
-        const wholePool = this.userData.learningPool;
-        const readyPool = wholePool.filter(wordData => {
-            if (wordData.successGuesses<10 && wordData.nextGuessTime<time) {
+    getPoolLength (nextGuessTime) {
+        const pool = this.userData.learningPool;
+        return pool.filter(wordData => {
+            if (wordData.nextGuessTime<=nextGuessTime) {
                 return wordData
             }
-        });
-        console.log(wholePool);
-        console.log(readyPool)
-        
+        }).length
+    }
+    
+    getKnownWordsCount() {
+        return this.userData.knownWords.length
     }
 
     updateWordInPool (wordNumber, successGuess) {
@@ -206,7 +206,7 @@ export default class  {
         
     }
     
-    getUserData () {
+    getUserData() {
         return this.userData;
     }
 

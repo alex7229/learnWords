@@ -8,8 +8,8 @@ body {
     width: 1000px;
     background: #faf8ef;
 }
-html, body {
-
+button, div {
+    position: relative;
 }
 .ital {
     font-style: oblique;
@@ -50,6 +50,23 @@ input[type='number'] {
 #fullReset {
     display: none;
 }
+#words form {
+    margin-bottom: 20px;
+}
+#mainButtons {
+    float: left;
+}
 #advancedButtons {
-    display: block
+    float: right;
+    margin-bottom:20px;
+}
+#poolData {
+    clear: right;
+    float: right
+}
+#learningNotification {
+    clear: left
+}
+#updateOptions {
+    display: none
 }

@@ -2,20 +2,11 @@
  * Created by tup1tsa on 12.08.2016.
  */
 export default class {
-
-    static togglePreferences (state) {
-        let elem = document.getElementById('preferences');
+    
+    static toggleBlock (id, typeOfBLock, state) {
+        let elem = document.getElementById(id);
         if (state) {
-            elem.style.display = 'block'
-        } else {
-            elem.style.display = 'none'
-        }
-    }
-
-    static toggleLearningForm (state) {
-        let elem = document.getElementById('words');
-        if (state) {
-            elem.style.display = 'block'
+            elem.style.display = typeOfBLock
         } else {
             elem.style.display = 'none'
         }
@@ -31,7 +22,7 @@ export default class {
         document.getElementById('questionedWord').textContent = word
     }
 
-    static showStatistics (data) {
+    static showWordStatistics (data) {
         let elem = document.getElementById('statistics');
         if (typeof data === 'string') {
             elem.innerHTML = data
@@ -41,15 +32,31 @@ export default class {
             elem.innerHTML = `Difficulty is ${(data.number/25000*100).toFixed(2)}%.<br>That word is from your pool. U have guessed it right ${successGuesses} times. Last check was ${lastGuessTime}`;
         }
     }
+    static showPoolStatistics (htmlData) {
+        let elem = document.getElementById('poolData');
+        elem.innerHTML = htmlData
+    }
+    
+    static checkPoolStatisticsDisplayState() {
+        let elem = document.getElementById('poolData');
+        if (elem.innerHTML.length>0) {
+            return true
+        }
+    }
+    
+    static hidePoolData () {
+        document.getElementById('poolData').innerHTML = ``
+    }
     
     static clearInput() {
         document.getElementById('answerWord').value = ''
     }
     
     static clearTranslations () {
-        document.querySelectorAll('#pureAnswersBox, #translationBox, #dictionaryBox').forEach(elem => {
+        let translations = document.querySelectorAll('#pureAnswersBox, #translationBox, #dictionaryBox');
+        for (let elem of translations) {
             elem.innerHTML = ``
-        })
+        }
     }
     
     static showNotification (text) {
@@ -67,13 +74,22 @@ export default class {
         audio.play();
     }
 
-    static toggleFullResetBtn (state) {
-        let elem = document.getElementById('fullReset');
-        if (state === 'on') {
-            elem.style.display = 'inline-block'
-        } else if (state === 'off') {
-            elem.style.display = 'none'
+    static toggleResetButtons (state) {
+        let buttons = document.querySelectorAll('#fullReset, #updateOptions');
+        for (let button of buttons) {
+            if (state) {
+                button.style.display = 'inline-block'
+            } else {
+                buttons.style.display = 'none'
+            }
         }
     }
-
+    
+    static showPreferencesData(minRange, maxRange, order) {
+        document.getElementById('minRange').value = minRange;
+        document.getElementById('maxRange').value = maxRange;
+        document.getElementById('order').value = order
+    }
+    
+    
 }

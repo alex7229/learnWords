@@ -64,25 +64,27 @@
     <div id="words">
         <p>Current word is: '<b><span id="questionedWord"></span></b>'.</p>
         <p id="statistics"></p>
-
-
-
         <form onsubmit="return false;">
             <label for="answerWord">Type your answer</label><br>
             <input type="text" id="answerWord" autocomplete="off">
         </form>
-        <button id="checkAnswer" type="button">I know that word</button>
-        <button id="startLearnWord" type="button">I don't know word</button>
-        <button id="skipWord" type="button">I don't want to learn that word</button><br>
-        <button id="showTranslations" type="button">Show translations</button><br>
+        <div id="mainButtons">
+            <button id="startLearnWord" type="button">I don't know word</button>
+            <button id="skipWord" type="button">I don't want to learn that word</button>
+            <button id="showTranslations" type="button">Show translations</button>
+        </div>
         <div id="advancedButtons">
-            <button id="showUserData" type="button">Show userData</button><br>
+            <p>Advanced buttons</p>
+            <button id="showUserData" type="button">Show userData</button>
+            <button id="hideUserData" type="button">Hide user Data</button><br>
             <input type="number" id="straightNumber">
             <button id="insertNumber" type="button">Insert straight number</button>
         </div>
+        <div id="poolData"></div>
     </div>
     <div id="learningNotification"></div>
     <button id="fullReset" type="button">Full reset</button>
+    <button id="updateOptions" type="button">Update options</button>
 </div>
 
 <div id="wordMeanings">
