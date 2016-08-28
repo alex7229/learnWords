@@ -29,7 +29,7 @@ export default class {
         } else {
             const successGuesses = data.successGuesses;
             const lastGuessTime = new Date(data.lastGuessTime).toLocaleString();
-            elem.innerHTML = `Difficulty is ${(data.number/25000*100).toFixed(2)}%.<br>That word is from your pool. U have guessed it right ${successGuesses} times. Last check was ${lastGuessTime}`;
+            elem.innerHTML = `Difficulty is ${(data.number/10000*100).toFixed(2)}%.<br>That word is from your pool. U have guessed it right ${successGuesses} times. Last check was ${lastGuessTime}`;
         }
     }
     static showPoolStatistics (htmlData) {

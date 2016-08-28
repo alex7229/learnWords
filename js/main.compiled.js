@@ -1010,59 +1010,43 @@ var _class = function () {
     }, {
         key: 'setNextWordNumber',
         value: function setNextWordNumber() {
-            var self = this;
-            var nextWord = this.findFirstReadyWordFromPool();
-            if (nextWord) {
-                this.userData.currentWord = nextWord.number;
+            var poolWord = this.findFirstReadyWordFromPool();
+            if (poolWord) {
+                this.userData.currentWord = poolWord.number;
                 return;
             }
             var nextWordNumber = void 0;
             if (this.userData.options.order === 'random') {
-                nextWordNumber = findNextRandomWordNumber();
+                var unusedWords = this.findUnusedWords();
+                if (unusedWords.length === 0) {
+                    nextWordNumber = undefined;
+                } else {
+                    var index = Math.floor(Math.random() * unusedWords.length);
+                    nextWordNumber = unusedWords[index];
+                }
             } else {
-                nextWordNumber = this.userData.currentWord + 1;
-                if (nextWordNumber > this.userData.options.lastWord) {
-                    this.userData.currentWord = undefined;
-                    return;
+                var possibleNextNumber = this.userData.currentWord + 1;
+                if (possibleNextNumber > this.userData.options.lastWord) {
+                    nextWordNumber = undefined;
+                } else {
+                    nextWordNumber = possibleNextNumber;
                 }
             }
             this.userData.currentWord = nextWordNumber;
-
-            function findNextRandomWordNumber() {
-                if (self.userData.learningPool.length + self.userData.knownWords.length > self.userData.options.lastWord - self.userData.options.firstWord) {
-                    return undefined;
-                }
-                var number = Math.ceil(Math.random() * self.userData.options.lastWord);
-                if (!self.findWordInKnownList(number) && !self.findWordInPool(number)) {
-                    return number;
-                } else {
-                    return findNextRandomWordNumber();
-                }
-            }
         }
     }, {
         key: 'findWordInKnownList',
         value: function findWordInKnownList(number) {
-            var currentWord = this.userData.knownWords.filter(function (wordNumber) {
-                if (wordNumber === number) {
-                    return number;
-                }
+            return this.userData.knownWords.find(function (wordNumber) {
+                if (wordNumber === number) return number;
             });
-            if (currentWord.length === 1) {
-                return true;
-            }
         }
     }, {
         key: 'findWordInPool',
         value: function findWordInPool(wordNumber) {
-            var currentWord = this.userData.learningPool.filter(function (word) {
-                if (word.number == wordNumber) {
-                    return word;
-                }
+            return this.userData.learningPool.find(function (wordData) {
+                if (wordData.number === wordNumber) return wordData;
             });
-            if (currentWord.length === 1) {
-                return currentWord[0];
-            }
         }
     }, {
         key: 'getPureAnswerList',
@@ -1105,11 +1089,24 @@ var _class = function () {
             this.userData.learningPool.push(word);
         }
     }, {
-        key: 'getPoolLength',
-        value: function getPoolLength(nextGuessTime) {
+        key: 'calculateNumberOfWordsInPool',
+        value: function calculateNumberOfWordsInPool(minGuesses) {
+            var maxGuesses = arguments.length <= 1 || arguments[1] === undefined ? Number.MAX_SAFE_INTEGER : arguments[1];
+
             var pool = this.userData.learningPool;
             return pool.filter(function (wordData) {
-                if (wordData.nextGuessTime <= nextGuessTime) {
+                if (wordData.successGuesses <= maxGuesses && wordData.successGuesses >= minGuesses) {
+                    return wordData;
+                }
+            }).length;
+        }
+    }, {
+        key: 'calculateReadyWordsInPool',
+        value: function calculateReadyWordsInPool() {
+            var pool = this.userData.learningPool;
+            var time = new Date().getTime();
+            return pool.filter(function (wordData) {
+                if (wordData.nextGuessTime < time) {
                     return wordData;
                 }
             }).length;
@@ -1131,10 +1128,14 @@ var _class = function () {
                 var delay = void 0;
                 if (currentAttempt <= 3) {
                     delay = 6 * 60 * 60 * 1000;
-                } else if (currentAttempt > 3 && currentAttempt < 7) {
+                } else if (currentAttempt >= 4 && currentAttempt <= 6) {
                     delay = 24 * 60 * 60 * 1000;
-                } else if (currentAttempt >= 7) {
+                } else if (currentAttempt === 7 || currentAttempt === 8) {
                     delay = 3 * 24 * 60 * 60 * 1000;
+                } else if (currentAttempt === 9) {
+                    delay = 10 * 24 * 60 * 60 * 1000;
+                } else if (currentAttempt >= 10) {
+                    delay = 30 * 240 * 60 * 60 * 1000;
                 }
                 word.nextGuessTime = currentTime + delay;
             } else {
@@ -1196,6 +1197,17 @@ var _class = function () {
         value: function setNextWordNumberStraight() {
             var number = document.getElementById('straightNumber').value;
             this.userData.currentWord = number;
+        }
+    }, {
+        key: 'findUnusedWords',
+        value: function findUnusedWords() {
+            var unusedWords = [];
+            for (var i = this.userData.options.firstWord; i <= this.userData.options.lastWord; i++) {
+                if (!this.findWordInKnownList(i) && !this.findWordInPool(i)) {
+                    unusedWords.push(i);
+                }
+            }
+            return unusedWords;
         }
     }]);
 
@@ -1402,7 +1414,7 @@ var _class = function () {
             } else {
                 var successGuesses = data.successGuesses;
                 var lastGuessTime = new Date(data.lastGuessTime).toLocaleString();
-                elem.innerHTML = 'Difficulty is ' + (data.number / 25000 * 100).toFixed(2) + '%.<br>That word is from your pool. U have guessed it right ' + successGuesses + ' times. Last check was ' + lastGuessTime;
+                elem.innerHTML = 'Difficulty is ' + (data.number / 10000 * 100).toFixed(2) + '%.<br>That word is from your pool. U have guessed it right ' + successGuesses + ' times. Last check was ' + lastGuessTime;
             }
         }
     }, {
@@ -1675,6 +1687,7 @@ var controller = {
         learningMachine.downloadWords().then(function () {
             controller.getQuestion();
         });
+        this.showUserPool();
         _learnMachineView2.default.toggleBlock('words', 'block', true);
         _learnMachineView2.default.toggleBlock('preferences', 'block', false);
         _learnMachineView2.default.toggleBlock('learningNotification');
@@ -1687,7 +1700,7 @@ var controller = {
                 if (wordInPool) {
                     _learnMachineView2.default.showWordStatistics(wordInPool);
                 } else {
-                    _learnMachineView2.default.showWordStatistics('Difficulty is ' + (number / 25000 * 100).toFixed(2) + '%.<br>U see that word for first time. ');
+                    _learnMachineView2.default.showWordStatistics('Difficulty is ' + (number / 10000 * 100).toFixed(2) + '%.<br>U see that word for first time. ');
                 }
                 _learnMachineView2.default.showQuestion(questionWord);
             });
@@ -1748,7 +1761,6 @@ var controller = {
     },
     updateUserOptions: function updateUserOptions() {
         var oldUserData = learningMachine.getUserData();
-        console.log(oldUserData);
         var newMinRange = parseInt(document.getElementById('minRange').value);
         var newMaxRange = parseInt(document.getElementById('maxRange').value);
         var oldMinRange = oldUserData.options.firstWord;
@@ -1759,6 +1771,10 @@ var controller = {
             _learnMachineView2.default.showNotification('Your last word should be equal or more than ' + oldMaxRange);
         } else if (newMinRange === oldMinRange && newMaxRange === oldMaxRange || !newMinRange || !newMaxRange) {
             _learnMachineView2.default.showNotification('You should declare new minimum and maximum ranges');
+        } else if (newMinRange < 1) {
+            _learnMachineView2.default.showNotification('First word number cannot be less than 1');
+        } else if (newMaxRange > 25000) {
+            _learnMachineView2.default.showNotification('Last word number cannot exceed 25,000');
         } else {
             var oldStorageData = (0, _storage.getData)();
             oldStorageData.options.firstWord = newMinRange;
@@ -1771,19 +1787,19 @@ var controller = {
             _learnMachineView2.default.toggleBlock('words', 'block', true);
             learningMachine.setUserData((0, _storage.getData)());
             learningMachine.setNextWordNumber();
+            (0, _storage.saveSession)(learningMachine.getUserData());
             this.getQuestion();
         }
     },
     showUserPool: function showUserPool() {
-        var sixHoursMs = 6 * 3600 * 1000;
-        var dayMs = 24 * 3600 * 1000;
-        var weekMs = 7 * 24 * 3600 * 1000;
-        var currentTime = new Date().getTime();
-        var newWordsCount = learningMachine.getPoolLength(currentTime + sixHoursMs);
-        var mediumWordsCount = learningMachine.getPoolLength(currentTime + dayMs);
-        var oldWordsCount = learningMachine.getPoolLength(currentTime + weekMs);
+        var readyWordsCount = learningMachine.calculateReadyWordsInPool();
+        var newWordsCount = learningMachine.calculateNumberOfWordsInPool(0, 3);
+        var mediumWordsCount = learningMachine.calculateNumberOfWordsInPool(4, 6);
+        var oldWordsCount = learningMachine.calculateNumberOfWordsInPool(7, 8);
+        var superOldWordsCount = learningMachine.calculateNumberOfWordsInPool(9, 9);
+        var maxOldWordsCount = learningMachine.calculateNumberOfWordsInPool(10);
         var knownWordsCount = learningMachine.getKnownWordsCount();
-        var data = 'New words: ' + newWordsCount + '.<br>Medium words: ' + mediumWordsCount + '.<br>Old words: ' + oldWordsCount + '.<br>All known words: ' + knownWordsCount;
+        var data = 'Ready words: ' + readyWordsCount + '.<br>\n                        New words: ' + newWordsCount + '.<br>\n                        Medium words: ' + mediumWordsCount + '.<br>\n                        Old words: ' + oldWordsCount + '.<br>\n                        Very old words: ' + superOldWordsCount + '.<br>\n                        Max old words: ' + maxOldWordsCount + '.<br>\n                        All known words: ' + knownWordsCount;
         _learnMachineView2.default.showPoolStatistics(data);
     },
     updatePoolStatistics: function updatePoolStatistics() {
@@ -1864,14 +1880,13 @@ var controller = {
     listenButtons: function listenButtons() {
         document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
         document.getElementById("startLearning").onclick = this.startLearning.bind(this);
-        document.getElementById('showUserData').onclick = this.showUserPool;
-        document.getElementById('hideUserData').onclick = _learnMachineView2.default.hidePoolData;
         document.getElementById('skipWord').onclick = this.skipWord.bind(this);
         document.getElementById('showTranslations').onclick = this.showAllTranslations.bind(this);
         document.getElementById('insertNumber').onclick = learningMachine.setNextWordNumberStraight.bind(learningMachine);
         document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
         document.getElementById('fullReset').onclick = this.fullReset.bind(this);
         document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
+        document.getElementById('calculateUnusedWords').onclick = learningMachine.findUnusedWords.bind(learningMachine);
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
@@ -1891,6 +1906,7 @@ window.onload = function () {
         learningMachine.setUserData((0, _storage.getData)());
         learningMachine.downloadWords().then(function () {
             controller.getQuestion();
+            controller.showUserPool();
         });
     } else {
         _learnMachineView2.default.toggleBlock('preferences', 'block', true);

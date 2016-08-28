@@ -40,58 +40,41 @@ export default class  {
     }
 
     setNextWordNumber () {
-        let self = this;
-        let nextWord = this.findFirstReadyWordFromPool();
-        if (nextWord) {
-            this.userData.currentWord = nextWord.number;
+        let poolWord = this.findFirstReadyWordFromPool();
+        if (poolWord) {
+            this.userData.currentWord = poolWord.number;
             return
         }
         let nextWordNumber;
         if (this.userData.options.order === 'random') {
-            nextWordNumber = findNextRandomWordNumber()
-        } else {
-            nextWordNumber = this.userData.currentWord + 1;
-            if (nextWordNumber>this.userData.options.lastWord) {
-                this.userData.currentWord = undefined;
-                return
+            const unusedWords = this.findUnusedWords();
+            if (unusedWords.length === 0) {
+                nextWordNumber = undefined
+            } else {
+                const index = Math.floor(Math.random() * unusedWords.length);
+                nextWordNumber =  unusedWords[index];
             }
-
+        } else {
+            const possibleNextNumber = this.userData.currentWord + 1;
+            if (possibleNextNumber>this.userData.options.lastWord) {
+                nextWordNumber = undefined
+            } else {
+                nextWordNumber = possibleNextNumber
+            }
         }
         this.userData.currentWord = nextWordNumber;
-
-        function findNextRandomWordNumber() {
-            if ((self.userData.learningPool.length+self.userData.knownWords.length) > (self.userData.options.lastWord-self.userData.options.firstWord)) {
-                return undefined
-            }
-            let number = Math.ceil(Math.random() * self.userData.options.lastWord);
-            if ((!self.findWordInKnownList(number)) && (!self.findWordInPool(number))) {
-                return number
-            } else {
-                return findNextRandomWordNumber()
-            }
-        }
     }
 
     findWordInKnownList (number) {
-        let currentWord = this.userData.knownWords.filter(wordNumber => {
-            if (wordNumber === number) {
-                return number
-            }
+        return this.userData.knownWords.find((wordNumber) => {
+            if (wordNumber === number) return number
         });
-        if (currentWord.length === 1) {
-            return true
-        }
     }
 
     findWordInPool (wordNumber) {
-        let currentWord = this.userData.learningPool.filter(word => {
-            if (word.number == wordNumber) {
-                return word
-            }
-        });
-        if (currentWord.length === 1) {
-            return currentWord[0]
-        }
+        return this.userData.learningPool.find((wordData) => {
+            if (wordData.number === wordNumber) return wordData
+        })
     }
     
     getPureAnswerList () {
@@ -130,10 +113,20 @@ export default class  {
         this.userData.learningPool.push(word)
     }
 
-    getPoolLength (nextGuessTime) {
+    calculateNumberOfWordsInPool (minGuesses, maxGuesses = Number.MAX_SAFE_INTEGER) {
         const pool = this.userData.learningPool;
         return pool.filter(wordData => {
-            if (wordData.nextGuessTime<=nextGuessTime) {
+            if ((wordData.successGuesses<=maxGuesses) && (wordData.successGuesses>=minGuesses)) {
+                return wordData
+            }
+        }).length
+    }
+    
+    calculateReadyWordsInPool () {
+        const pool = this.userData.learningPool;
+        const time = new Date().getTime();
+        return pool.filter(wordData => {
+            if (wordData.nextGuessTime<time) {
                 return wordData
             }
         }).length
@@ -153,10 +146,14 @@ export default class  {
             let delay;
             if (currentAttempt<=3) {
                 delay = 6*60*60*1000;
-            } else if (currentAttempt>3 && currentAttempt<7) {
+            } else if (currentAttempt>=4 && currentAttempt<=6) {
                 delay = 24*60*60*1000
-            } else if (currentAttempt>=7) {
+            } else if (currentAttempt === 7 || currentAttempt === 8) {
                 delay = 3*24*60*60*1000
+            } else if (currentAttempt === 9) {
+                delay = 10*24*60*60*1000
+            } else if (currentAttempt >= 10) {
+                delay = 30*240*60*60*1000
             }
             word.nextGuessTime = currentTime + delay
         } else {
@@ -213,6 +210,16 @@ export default class  {
     setNextWordNumberStraight () {
         const number = document.getElementById('straightNumber').value;
         this.userData.currentWord = number
+    }
+
+    findUnusedWords() {
+        let unusedWords = [];
+        for (let i=this.userData.options.firstWord; i<=this.userData.options.lastWord; i++) {
+            if (!(this.findWordInKnownList(i)) && (!this.findWordInPool(i))) {
+                unusedWords.push(i)
+            }
+        }
+        return unusedWords
     }
 
 

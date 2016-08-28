@@ -80,6 +80,7 @@ const controller = {
             .then(() => {
                 controller.getQuestion()
             });
+        this.showUserPool();
         LearnMachineView.toggleBlock('words', 'block', true);
         LearnMachineView.toggleBlock('preferences', 'block', false);
         LearnMachineView.toggleBlock('learningNotification');
@@ -94,7 +95,7 @@ const controller = {
                     if (wordInPool) {
                         LearnMachineView.showWordStatistics(wordInPool)
                     } else {
-                        LearnMachineView.showWordStatistics(`Difficulty is ${(number/25000*100).toFixed(2)}%.<br>U see that word for first time. `)
+                        LearnMachineView.showWordStatistics(`Difficulty is ${(number/10000*100).toFixed(2)}%.<br>U see that word for first time. `)
                     }
                     LearnMachineView.showQuestion(questionWord)
                 })
@@ -162,7 +163,6 @@ const controller = {
 
     updateUserOptions () {
         const oldUserData = learningMachine.getUserData();
-        console.log(oldUserData);
         const newMinRange = parseInt(document.getElementById('minRange').value);
         const newMaxRange = parseInt(document.getElementById('maxRange').value);
         const oldMinRange = oldUserData.options.firstWord;
@@ -173,7 +173,11 @@ const controller = {
             LearnMachineView.showNotification(`Your last word should be equal or more than ${oldMaxRange}`);
         } else if (((newMinRange === oldMinRange) && (newMaxRange === oldMaxRange)) || (!newMinRange) || (!newMaxRange)) {
             LearnMachineView.showNotification(`You should declare new minimum and maximum ranges`);
-        }  else {
+        }  else if (newMinRange < 1) {
+            LearnMachineView.showNotification(`First word number cannot be less than 1`);
+        } else if (newMaxRange > 25000) {
+            LearnMachineView.showNotification(`Last word number cannot exceed 25,000`);
+        } else {
             let oldStorageData = storageGetData();
             oldStorageData.options.firstWord  = newMinRange;
             oldStorageData.options.lastWord = newMaxRange;
@@ -185,21 +189,27 @@ const controller = {
             LearnMachineView.toggleBlock('words', 'block', true);
             learningMachine.setUserData(storageGetData());
             learningMachine.setNextWordNumber();
+            saveSession(learningMachine.getUserData());
             this.getQuestion();
         }
 
     },
 
     showUserPool () {
-        const sixHoursMs = 6*3600*1000;
-        const dayMs = 24*3600*1000;
-        const weekMs = 7*24*3600*1000;
-        const currentTime = new Date().getTime();
-        const newWordsCount = learningMachine.getPoolLength(currentTime+sixHoursMs);
-        const mediumWordsCount = learningMachine.getPoolLength(currentTime+dayMs);
-        const oldWordsCount = learningMachine.getPoolLength(currentTime+weekMs);
+        const readyWordsCount = learningMachine.calculateReadyWordsInPool();
+        const newWordsCount = learningMachine.calculateNumberOfWordsInPool(0, 3);
+        const mediumWordsCount = learningMachine.calculateNumberOfWordsInPool(4, 6);
+        const oldWordsCount = learningMachine.calculateNumberOfWordsInPool(7, 8);
+        const superOldWordsCount = learningMachine.calculateNumberOfWordsInPool(9, 9);
+        const maxOldWordsCount = learningMachine.calculateNumberOfWordsInPool(10);
         const knownWordsCount = learningMachine.getKnownWordsCount();
-        const data = `New words: ${newWordsCount}.<br>Medium words: ${mediumWordsCount}.<br>Old words: ${oldWordsCount}.<br>All known words: ${knownWordsCount}`;
+        const data = `Ready words: ${readyWordsCount}.<br>
+                        New words: ${newWordsCount}.<br>
+                        Medium words: ${mediumWordsCount}.<br>
+                        Old words: ${oldWordsCount}.<br>
+                        Very old words: ${superOldWordsCount}.<br>
+                        Max old words: ${maxOldWordsCount}.<br>
+                        All known words: ${knownWordsCount}`;
         LearnMachineView.showPoolStatistics(data);
     },
 
@@ -300,14 +310,13 @@ const controller = {
     listenButtons () {
         document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
         document.getElementById("startLearning").onclick = this.startLearning.bind(this);
-        document.getElementById('showUserData').onclick = this.showUserPool;
-        document.getElementById('hideUserData').onclick = LearnMachineView.hidePoolData;
         document.getElementById('skipWord').onclick = this.skipWord.bind(this);
         document.getElementById('showTranslations').onclick = this.showAllTranslations.bind(this);
         document.getElementById('insertNumber').onclick = learningMachine.setNextWordNumberStraight.bind(learningMachine);
         document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
         document.getElementById('fullReset').onclick = this.fullReset.bind(this);
         document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
+        document.getElementById('calculateUnusedWords').onclick = learningMachine.findUnusedWords.bind(learningMachine);
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
@@ -334,7 +343,8 @@ const controller = {
          learningMachine.setUserData(storageGetData());
          learningMachine.downloadWords()
              .then(() => {
-                 controller.getQuestion()
+                 controller.getQuestion();
+                 controller.showUserPool();
              })
      } else {
          LearnMachineView.toggleBlock('preferences', 'block', true);
