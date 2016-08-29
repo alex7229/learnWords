@@ -1,4 +1,3 @@
-//todo -  add sound (when u guessed right answer) from fallout4, add authentication (to save user progress)
 require('whatwg-fetch');
 import LearnMachine from './Model/learningMachine'
 import yandexApi from './AjaxRequests/yandexApi'
@@ -65,7 +64,7 @@ const controller = {
         const lastWord = parseInt(document.getElementById('maxRange').value);
         const firstWord = parseInt(document.getElementById('minRange').value);
         const orderValue = document.getElementById('order').value;
-        if (firstWord < 0 || lastWord > 25000) {
+        if (firstWord < 0 || lastWord > 27380) {
             LearnMachineView.showNotification('range of words is not correct');
             return
         }
@@ -75,6 +74,7 @@ const controller = {
         }
         storageSaveOptions(firstWord, lastWord, orderValue);
         learningMachine.setUserData(storageGetData());
+        learningMachine.setUnusedWords();
         learningMachine.setNextWordNumber();
         learningMachine.downloadWords()
             .then(() => {
@@ -143,12 +143,17 @@ const controller = {
     },
 
     skipWord () {
-        learningMachine.skipWord();
-        saveSession(learningMachine.getUserData());
-        LearnMachineView.clearInput();
-        LearnMachineView.clearTranslations();
-        this.getQuestion();
-        this.updatePoolStatistics();
+        const currentNumber= learningMachine.getCurrentNumber();
+        if (!learningMachine.findWordInPool(currentNumber)) {
+            learningMachine.skipWord();
+            saveSession(learningMachine.getUserData());
+            LearnMachineView.clearInput();
+            LearnMachineView.clearTranslations();
+            this.getQuestion();
+            this.updatePoolStatistics();
+        } else {
+            LearnMachineView.showNotification('U cannot skip word from your pool. Deal with it')
+        }
     },
 
     fullReset() {
@@ -175,8 +180,8 @@ const controller = {
             LearnMachineView.showNotification(`You should declare new minimum and maximum ranges`);
         }  else if (newMinRange < 1) {
             LearnMachineView.showNotification(`First word number cannot be less than 1`);
-        } else if (newMaxRange > 25000) {
-            LearnMachineView.showNotification(`Last word number cannot exceed 25,000`);
+        } else if (newMaxRange > 27380) {
+            LearnMachineView.showNotification(`Last word number cannot exceed 27,380`);
         } else {
             let oldStorageData = storageGetData();
             oldStorageData.options.firstWord  = newMinRange;
@@ -188,6 +193,7 @@ const controller = {
             LearnMachineView.toggleBlock('updateOptions');
             LearnMachineView.toggleBlock('words', 'block', true);
             learningMachine.setUserData(storageGetData());
+            learningMachine.setUnusedWords();
             learningMachine.setNextWordNumber();
             saveSession(learningMachine.getUserData());
             this.getQuestion();
@@ -208,7 +214,7 @@ const controller = {
                         Medium words: ${mediumWordsCount}.<br>
                         Old words: ${oldWordsCount}.<br>
                         Very old words: ${superOldWordsCount}.<br>
-                        Max old words: ${maxOldWordsCount}.<br>
+                        Ancient words: ${maxOldWordsCount}.<br>
                         All known words: ${knownWordsCount}`;
         LearnMachineView.showPoolStatistics(data);
     },
@@ -218,7 +224,8 @@ const controller = {
           this.showUserPool()
       }
     },
-    
+
+
     
     
     
@@ -316,7 +323,9 @@ const controller = {
         document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
         document.getElementById('fullReset').onclick = this.fullReset.bind(this);
         document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
-        document.getElementById('calculateUnusedWords').onclick = learningMachine.findUnusedWords.bind(learningMachine);
+        document.getElementById('calculateUnusedWords').onclick = learningMachine.setUnusedWords.bind(learningMachine);
+        
+
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = showRegistrationBlock;
@@ -355,6 +364,3 @@ const controller = {
 
      
  };
-
-
-//todO: if pool is overwhelming - don't add new words; start new learning with options

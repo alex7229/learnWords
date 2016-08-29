@@ -47,12 +47,13 @@ export default class  {
         }
         let nextWordNumber;
         if (this.userData.options.order === 'random') {
-            const unusedWords = this.findUnusedWords();
+            let unusedWords = this.userData.unusedWords;
             if (unusedWords.length === 0) {
                 nextWordNumber = undefined
             } else {
                 const index = Math.floor(Math.random() * unusedWords.length);
                 nextWordNumber =  unusedWords[index];
+                unusedWords.splice(index, 1)
             }
         } else {
             const possibleNextNumber = this.userData.currentWord + 1;
@@ -212,17 +213,31 @@ export default class  {
         this.userData.currentWord = number
     }
 
-    findUnusedWords() {
-        let unusedWords = [];
+    setUnusedWords() {
+        this.userData.unusedWords = [];
         for (let i=this.userData.options.firstWord; i<=this.userData.options.lastWord; i++) {
             if (!(this.findWordInKnownList(i)) && (!this.findWordInPool(i))) {
-                unusedWords.push(i)
+                this.userData.unusedWords.push(i)
             }
         }
-        return unusedWords
     }
 
+    fillDataTest() {
+        for (let i=1; i<19950; i++) {
+            this.userData.knownWords.push(i)
+        }
+        for (let i=20000; i<24450; i++) {
+            const sixHours = 6*60*60*1000;
+            const currentTime = new Date().getTime();
+            const word = {
+                number: i,
+                successGuesses: 0,
+                lastGuessTime: currentTime,
+                nextGuessTime: currentTime + sixHours
+            };
+            this.userData.learningPool.push(word)
+        }
+    }
 
 }
 
-// todo - view is changing by model, not controller.

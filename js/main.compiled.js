@@ -1017,12 +1017,13 @@ var _class = function () {
             }
             var nextWordNumber = void 0;
             if (this.userData.options.order === 'random') {
-                var unusedWords = this.findUnusedWords();
+                var unusedWords = this.userData.unusedWords;
                 if (unusedWords.length === 0) {
                     nextWordNumber = undefined;
                 } else {
                     var index = Math.floor(Math.random() * unusedWords.length);
                     nextWordNumber = unusedWords[index];
+                    unusedWords.splice(index, 1);
                 }
             } else {
                 var possibleNextNumber = this.userData.currentWord + 1;
@@ -1199,23 +1200,37 @@ var _class = function () {
             this.userData.currentWord = number;
         }
     }, {
-        key: 'findUnusedWords',
-        value: function findUnusedWords() {
-            var unusedWords = [];
+        key: 'setUnusedWords',
+        value: function setUnusedWords() {
+            this.userData.unusedWords = [];
             for (var i = this.userData.options.firstWord; i <= this.userData.options.lastWord; i++) {
                 if (!this.findWordInKnownList(i) && !this.findWordInPool(i)) {
-                    unusedWords.push(i);
+                    this.userData.unusedWords.push(i);
                 }
             }
-            return unusedWords;
+        }
+    }, {
+        key: 'fillDataTest',
+        value: function fillDataTest() {
+            for (var i = 1; i < 19950; i++) {
+                this.userData.knownWords.push(i);
+            }
+            for (var _i = 20000; _i < 24450; _i++) {
+                var sixHours = 6 * 60 * 60 * 1000;
+                var currentTime = new Date().getTime();
+                var word = {
+                    number: _i,
+                    successGuesses: 0,
+                    lastGuessTime: currentTime,
+                    nextGuessTime: currentTime + sixHours
+                };
+                this.userData.learningPool.push(word);
+            }
         }
     }]);
 
     return _class;
 }();
-
-// todo - view is changing by model, not controller.
-
 
 exports.default = _class;
 
@@ -1630,7 +1645,6 @@ var _learnMachineView2 = _interopRequireDefault(_learnMachineView);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-//todo -  add sound (when u guessed right answer) from fallout4, add authentication (to save user progress)
 require('whatwg-fetch');
 
 
@@ -1673,7 +1687,7 @@ var controller = {
         var lastWord = parseInt(document.getElementById('maxRange').value);
         var firstWord = parseInt(document.getElementById('minRange').value);
         var orderValue = document.getElementById('order').value;
-        if (firstWord < 0 || lastWord > 25000) {
+        if (firstWord < 0 || lastWord > 27380) {
             _learnMachineView2.default.showNotification('range of words is not correct');
             return;
         }
@@ -1683,6 +1697,7 @@ var controller = {
         }
         (0, _storage.saveOptions)(firstWord, lastWord, orderValue);
         learningMachine.setUserData((0, _storage.getData)());
+        learningMachine.setUnusedWords();
         learningMachine.setNextWordNumber();
         learningMachine.downloadWords().then(function () {
             controller.getQuestion();
@@ -1743,12 +1758,17 @@ var controller = {
         }
     },
     skipWord: function skipWord() {
-        learningMachine.skipWord();
-        (0, _storage.saveSession)(learningMachine.getUserData());
-        _learnMachineView2.default.clearInput();
-        _learnMachineView2.default.clearTranslations();
-        this.getQuestion();
-        this.updatePoolStatistics();
+        var currentNumber = learningMachine.getCurrentNumber();
+        if (!learningMachine.findWordInPool(currentNumber)) {
+            learningMachine.skipWord();
+            (0, _storage.saveSession)(learningMachine.getUserData());
+            _learnMachineView2.default.clearInput();
+            _learnMachineView2.default.clearTranslations();
+            this.getQuestion();
+            this.updatePoolStatistics();
+        } else {
+            _learnMachineView2.default.showNotification('U cannot skip word from your pool. Deal with it');
+        }
     },
     fullReset: function fullReset() {
         localStorage.clear();
@@ -1773,8 +1793,8 @@ var controller = {
             _learnMachineView2.default.showNotification('You should declare new minimum and maximum ranges');
         } else if (newMinRange < 1) {
             _learnMachineView2.default.showNotification('First word number cannot be less than 1');
-        } else if (newMaxRange > 25000) {
-            _learnMachineView2.default.showNotification('Last word number cannot exceed 25,000');
+        } else if (newMaxRange > 27380) {
+            _learnMachineView2.default.showNotification('Last word number cannot exceed 27,380');
         } else {
             var oldStorageData = (0, _storage.getData)();
             oldStorageData.options.firstWord = newMinRange;
@@ -1786,6 +1806,7 @@ var controller = {
             _learnMachineView2.default.toggleBlock('updateOptions');
             _learnMachineView2.default.toggleBlock('words', 'block', true);
             learningMachine.setUserData((0, _storage.getData)());
+            learningMachine.setUnusedWords();
             learningMachine.setNextWordNumber();
             (0, _storage.saveSession)(learningMachine.getUserData());
             this.getQuestion();
@@ -1799,7 +1820,7 @@ var controller = {
         var superOldWordsCount = learningMachine.calculateNumberOfWordsInPool(9, 9);
         var maxOldWordsCount = learningMachine.calculateNumberOfWordsInPool(10);
         var knownWordsCount = learningMachine.getKnownWordsCount();
-        var data = 'Ready words: ' + readyWordsCount + '.<br>\n                        New words: ' + newWordsCount + '.<br>\n                        Medium words: ' + mediumWordsCount + '.<br>\n                        Old words: ' + oldWordsCount + '.<br>\n                        Very old words: ' + superOldWordsCount + '.<br>\n                        Max old words: ' + maxOldWordsCount + '.<br>\n                        All known words: ' + knownWordsCount;
+        var data = 'Ready words: ' + readyWordsCount + '.<br>\n                        New words: ' + newWordsCount + '.<br>\n                        Medium words: ' + mediumWordsCount + '.<br>\n                        Old words: ' + oldWordsCount + '.<br>\n                        Very old words: ' + superOldWordsCount + '.<br>\n                        Ancient words: ' + maxOldWordsCount + '.<br>\n                        All known words: ' + knownWordsCount;
         _learnMachineView2.default.showPoolStatistics(data);
     },
     updatePoolStatistics: function updatePoolStatistics() {
@@ -1886,7 +1907,7 @@ var controller = {
         document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
         document.getElementById('fullReset').onclick = this.fullReset.bind(this);
         document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
-        document.getElementById('calculateUnusedWords').onclick = learningMachine.findUnusedWords.bind(learningMachine);
+        document.getElementById('calculateUnusedWords').onclick = learningMachine.setUnusedWords.bind(learningMachine);
 
         document.getElementById('loginBtn').onclick = this.login;
         document.getElementById('startRegistration').onclick = _authForm.showRegistrationBlock;
@@ -1913,8 +1934,6 @@ window.onload = function () {
         _learnMachineView2.default.toggleBlock('words');
     }
 };
-
-//todO: if pool is overwhelming - don't add new words; start new learning with options
 
 },{"./AjaxRequests/googleApi":3,"./AjaxRequests/login":4,"./AjaxRequests/registration":5,"./AjaxRequests/resetPassword":6,"./AjaxRequests/savedYandexTranslation":7,"./AjaxRequests/yandexApi":8,"./Model/Parse/google":9,"./Model/Parse/yandex":10,"./Model/authentication.js":11,"./Model/learningMachine":12,"./Model/storage":13,"./View/authForm":15,"./View/learnMachineView":16,"./View/translations":17,"whatwg-fetch":1}]},{},[18])
 
