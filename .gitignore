@@ -1,0 +1,5 @@
+.idea/*
+js/app.compiled.js
+node_modules
+web/js/app.compiled.js
+web/js/app.compiled.js.map

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Learning words</title>
+    <link rel="stylesheet" href="main.css"/>
+    <script src="/js/libs/dev/jquery-3.1.1.js"></script>
+    <script src="/js/libs/dev/lodash.js"></script>
+    <script src="/js/libs/dev/moment.js"></script>
+    <script src="/js/app.compiled.js" async></script>
+</head>
+<body>
+<div id="learning">
+    <form id="preferences">
+        <p>Choose range of words (from word with number <input type="number" id="minRange" min="1" value="1"> to <input type="number" id="maxRange" max="25000" value="10000"> number)<br></p>
+        <label for="order">Choose words order (random or from easier to more difficult)</label>
+        <select id="order">
+            <option value="random">random</option>
+            <option value="sequential">sequential</option>
+        </select><br>
+        <button id="startLearning" type="button">Let's start</button>
+    </form>
+    <div id="words">
+        <p>Current word is: '<b><span id="questionedWord"></span></b>'.</p>
+        <p id="statistics"></p>
+        <form onsubmit="return false;">
+            <label for="answerWord">Type your answer</label><br>
+            <input type="text" id="answerWord" autocomplete="off">
+        </form>
+        <div id="mainButtons">
+            <button id="startLearnWord" type="button">I don't know word</button>
+            <button id="skipWord" type="button">I don't want to learn that word</button>
+            <button id="showTranslations" type="button">Show translations</button>
+            <button id="showFullLearningPool">Show learning pool</button>
+            <button id="showCustomWordInput">Add custom word</button>
+        </div>
+        <div id="advancedButtons">
+            <p>Advanced buttons</p>
+            <input type="number" id="straightNumber">
+            <button id="insertNumber" type="button">Insert straight number</button>
+            <button id="calculateUnusedWords" type="button">Set unused words and log it</button>
+        </div>
+        <div id="poolData"></div>
+    </div>
+    <div id="learningNotification"></div>
+    <button id="fullReset" type="button">Full reset</button>
+    <button id="updateOptions" type="button">Update options</button>
+</div>
+
+<div id="wordMeanings">
+    <button id="googleTranslation">Google translation</button>
+    <button id="urbanDictionary">urban dictionary</button>
+    <div id="pureAnswersBox"></div>
+    <div id="translationBox"></div>
+    <div id="dictionaryBox"></div>
+</div>
+
+<div id="addCustomWord" class="popup">
+    <div>
+        <input type="text" autocomplete="off" id="newWord" placeholder="new word"><br>
+        <input type="text" autocomplete="off" id="newWordTranslation" placeholder="translation"><br>
+        <button id="addWord">Submit</button>
+        <button class="hidePopup">Back</button>
+    </div>
+</div>
+
+<div id="fullLearningPool" class="popup">
+    <div>
+        <input type="text" placeholder="word" id="poolWordFilter"><br><br><br>
+        <button class="hidePopup">Close</button>
+        <ol></ol>
+    </div>
+</div>
+
+</body>
+</html>

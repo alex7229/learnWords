@@ -1,0 +1,59 @@
+URGENT FIXES
+3) some words can have multiple definitions (important ones - app should ask all of them before move on)
+4) when you add custom word - you can choose  from the default words (name, number - so you can see the difficulty)  and if it'not on the list - create custom word
+    you should delete it from knownWords
+    if it's custom word - you should specify translation
+6) implement learning system for ultra new words
+    whenever you add new word or not able to answer correctly - add 'false' guesses. Next false guess (3 total in sequence) should be immediately,
+    only move that word to the end of learning pool. When you answer that word correctly three times  - turn on regular guesses system
+    (with regular 6 hour delay). If you're adding new words to pool (but there are no ready words) - don't turn on false guesses system (use it
+    instead the next time you see that word). It's super important feature for learning bunch of new words at once.
+    it's better to create another list with ultra new words and don't break existing system of poolwordsfinding
+7) make sure script will run node server at the windows start.
+8) make converter from old storage format to new one (make sure that words in pool aren't in known list - delete them from known)
+9) recalculate all unused words (mb it's fine, mb it's not - check), because some of them aren't from your learning range (0 to 10k words)
+10) if problems with connection occur - localStorage will break (probably that stuff happened with masturbation word)
+    if you set next word number - check if you can get translation for it (otherwise it will be like in screenshot)
+    so if there is no translation - don't update the storage (mb even don't set number for next word - throw huge error - some connection problem occured)
+11) allWords should be without number (just plain array with words - you can save it in localstorage - it's only 300 KB)
+    words in pool should not contain last guess time (it can be calculated automatically)
+MEDIUM FIXES
+0) rewrite all stuff to async/await and es6 modules (if it's make sense). Use babel for server (not only for web root). Make node server debugable.
+1) backup storage data to onedrive cloud (or even send by email)
+2) delete fords from known list  automatically if you want to add word to learning pool from known list
+3) filter learning pool by word familiarity (if it's old word - show first, for new - last, for super knew with no guesses - super last)
+4) change 'ё' to 'е'
+5) make possible to get list of saved user storages (you can choose which storage do you want to use, if last one from server for some reason is corrupted)
+6) redo filter statistics - ultra new words (0 guesses) and ancient words - only from 30 days period (not 15 or 22)
+7) remake all shown dates with fancy moment.js (for example - last check was 12 hours ago or 12 days ago, don't use boring date)
+8) to many yandex translations for some words cannot fit on the screen (make scroll possible)
+9) add possibility to delete words from learning pool via button `I don't want to learn that word`, but with prompt,
+    so you will not delete word from pool by accident ('Do you really want to delete word from pool?')
+10) when creating custom word - don't make that ridiculous number (aka 100k - just find last number in all words and increment it)
+
+LOW PRIORITY FIXES
+1) add pagination to learning pool
+2) when show learning pool list - make filter input active (and perform it, if it was set before)
+3) fix controller - there are methods with a lot of view lines (move them to view files)
+   learnMachine model inside controller is not very good case (it's not even a controller)
+4) revise all words from the pool (jump, hop, skip, leap, bound - all jumps, but they are different)
+5) if you click 'Show translations'  - word will be downloaded again. Fix it.
+6) when you click "I don't want to learn that word" - list of all know words is not updated.
+7) implement adding of new custom translations and marking important translations to every word (not only current word)
+
+POSSIBLE FEATURES
+1) add google images of current word
+2) add again urban dictionary and google images in iframe (download data via browser with parsed css)
+3) add user management (everyone can use my application) - mb with react
+4) add reactjs + redux
+5) add aggression slider for saving (if you have bad connection - don't send data to server every time  - mb once in day)
+    it requires manual save of data (if you want to use application from different devices)
+6) make opposite direction of guessing (question in russian (with important words highlighted - when multiple definition of word ) and you should type answer in english)
+7) mb make something for mobile - when you don't need to type the answer but choose translation (or even better - the definition of word)
+       you can get definition from all words or from your pool
+8) create custom phrases (idioms or words with prepositions - 'take off'), where you need only to choose meaning (and not type manually the answer - it would be frustrating)
+    number of choices would be 5...10
+9) create learning system for second and third forms of irregular verbs
+
+
+current task - learnMachine logic - line 247 - not finished check
