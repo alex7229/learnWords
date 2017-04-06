@@ -4,53 +4,9 @@
     <meta charset="UTF-8">
     <title>Learning words</title>
     <link rel="stylesheet" href="main.css"/>
-    <script src="js/main.compiled.js" async></script>
+    <script src="js/main.js" async></script>
 </head>
 <body>
-<div id=authentication>
-    <form id="authDefault" class="auth">
-        <label for="loginDefault">Login</label><br>
-        <input type="text" id="loginDefault"><br>
-        <label for="passwordDefault">Password</label><br>
-        <input type="password" id="passwordDefault"><br>
-        <button type="button" id="loginBtn">LogIn</button>
-        <button type="button" id="startRegistration">Registration</button>
-        <button type="button" id="resetPasswordStart">Reset password</button>
-    </form>
-    <form id="registration" class="auth">
-        <label for="loginReg">Login</label><br>
-        <input type="text" id="loginReg"><br>
-        <label for="passwordReg">Password</label><br>
-        <input type="password" id="passwordReg"><br>
-        <label for="repeatedPassword">Repeat password</label><br>
-        <input type="password" id="repeatedPassword"><br>
-        <label for="emailReg">Email (for password reset)</label><br>
-        <input type="email" id="emailReg"><br>
-        <label for="secretQuestionReg">Secret question</label><br>
-        <input type="text" id="secretQuestionReg"><br>
-        <label for="secretAnswerReg">Secret answer</label><br>
-        <input type="text" id="secretAnswerReg"><br>
-        <button type="button" id="endRegistration">Submit registration</button>
-    </form>
-    <form id="resetPassword" class="auth">
-        <label for="loginReset">Login</label><br>
-        <input type="text" id="loginReset"><br>
-        <label for="emailReset">Email (required if login is unknown)</label><br>
-        <input type="email" id="emailReset"><br>
-        <label for="secretAnswerReset">Secret answer</label><br>
-        <input type="text" id="secretAnswerReset"><br>
-        <p>Secret question: <span id="secretQuestionReset"></span></p>
-        <button type="button" id="getSecretQuestion">get question</button>
-        <button type="button" id="resetPasswordFinish">Send answer</button>
-    </form>
-    <div id="profileData" class="auth">
-        <p>User: <span id='profileName'></span></p>
-        <button type="button" id="logOut">LogOut</button>
-    </div>
-    <div id="authNotification" class="auth"></div>
-</div>
-
-
 <div id="learning">
     <form id="preferences">
         <p>Choose range of words (from word with number <input type="number" id="minRange" min="1" value="1"> to <input type="number" id="maxRange" max="25000" value="10000"> number)<br></p>
@@ -72,6 +28,8 @@
             <button id="startLearnWord" type="button">I don't know word</button>
             <button id="skipWord" type="button">I don't want to learn that word</button>
             <button id="showTranslations" type="button">Show translations</button>
+            <button id="showFullLearningPool">Show learning pool</button>
+            <button id="showCustomWordInput">Add custom word</button>
         </div>
         <div id="advancedButtons">
             <p>Advanced buttons</p>
@@ -87,9 +45,46 @@
 </div>
 
 <div id="wordMeanings">
+    <button id="googleTranslation">Google translation</button>
+    <button id="urbanDictionary">urban dictionary</button>
     <div id="pureAnswersBox"></div>
     <div id="translationBox"></div>
     <div id="dictionaryBox"></div>
 </div>
+
+<div id="addCustomWord" class="popup">
+    <div>
+        <input type="text" autocomplete="off" id="newWord" placeholder="new word"><br>
+        <button id="addWord">Submit</button>
+        <button id="hideNewWordInput">Back</button>
+    </div>
+</div>
+
+<div id="fullLearningPool" class="popup">
+    <div>
+        <input type="text" placeholder="word" id="poolWordFilter"><br><br><br>
+        <button id="hideFullLearningPool">Close</button>
+        <ol>
+            <li data-wordName="">
+                <ul>
+                    <li>
+                        last check was
+                    </li>
+                    <li>
+                        next check will be
+                    </li>
+                    <li>
+                        word is
+                    </li>
+                    <li><button data-wordName="" onclick="controller.deleteWordFromPool()">delete this word</button></li>
+                </ul>
+            </li>
+        </ol>
+
+    </div>
+</div>
+
+<div id="data"></div>
+
 </body>
 </html>

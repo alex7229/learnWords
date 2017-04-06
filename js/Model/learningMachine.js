@@ -4,7 +4,6 @@
 import getWordsList from '../AjaxRequests/getWordsList'
 import getSavedYandexWordTranslation from '../AjaxRequests/savedYandexTranslation'
 import YandexParse from '../Model/Parse/yandex'
-import View from '../View/learnMachineView'
 
 export default class  {
 
@@ -154,7 +153,7 @@ export default class  {
             } else if (currentAttempt === 9) {
                 delay = 10*24*60*60*1000
             } else if (currentAttempt >= 10) {
-                delay = 30*240*60*60*1000
+                delay = 30*24*60*60*1000
             }
             word.nextGuessTime = currentTime + delay
         } else {
