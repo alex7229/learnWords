@@ -7,8 +7,8 @@ const moment = require('moment');
 
 class Retriever extends DataManager{
 
-    constructor () {
-        super();
+    constructor (dev) {
+        super(dev);
     }
 
     getData() {

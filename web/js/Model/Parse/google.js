@@ -71,4 +71,21 @@ export default class {
         const regExp = /<span style="color:#767676">([\s\S]*?)<\/span>/;
         return this.rawData.match(regExp)[1].slice(0,-2);
     }
+
+    resolveAfter1Second(x) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(x);
+            }, 1000);
+        });
+    }
+
+    async add5(x) {
+        var a = this.resolveAfter1Second(20);
+        var b = this.resolveAfter1Second(30);
+        var с = this.resolveAfter1Second(32);
+        let answer =  x + await a + await b + await с;
+        console.log(answer);
+        return answer;
+    }
 }

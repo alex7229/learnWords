@@ -2,12 +2,15 @@
  * Created by uadn-gav on 2/27/17.
  */
 const Database = require('../components/Database');
-const fs = require('fs');
 
 class DataManager {
 
-    constructor() {
-        this.tableName = 'gav_learn_words';
+    constructor(dev) {
+        if (dev) {
+            this.tableName = 'gav_learn_words_dev';
+        } else {
+            this.tableName = 'gav_learn_words';
+        }
     }
 
     retrieveLastSaveTimeOfUserData() {

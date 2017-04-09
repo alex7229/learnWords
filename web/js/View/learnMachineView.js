@@ -61,19 +61,25 @@ export default {
         document.getElementById('questionedWord').textContent = word
     },
 
-    showWordStatistics (data) {
+    showWordStatistics (data, isCustom = false) {
         let elem = document.getElementById('statistics');
         if (typeof data === 'string') {
             elem.innerHTML = data
         } else {
             const successGuesses = data.successGuesses;
             const lastGuessTime = new Date(data.lastGuessTime).toLocaleString();
-            elem.innerHTML = `Difficulty is ${(data.number/10000*100).toFixed(2)}%.<br>That word is from your pool. U have guessed it right ${successGuesses} times. Last check was ${lastGuessTime}`;
+            const difficulty = isCustom ? 'This is custom word. ' : `Difficulty is ${(data.number/10000*100).toFixed(2)}%.`;
+            elem.innerHTML = data.ultraNewWordsGuesses > 0 ?
+                `This is new word u need to learn. Guess it ${data.ultraNewWordsGuesses} more times.` :
+                `${difficulty}<br>That word is from your pool. U have guessed it right ${successGuesses} times. Last check was ${lastGuessTime}`;
         }
     },
-    showPoolStatistics (htmlData) {
+    showPoolStatistics (data) {
+        const html = data.map(({name, words}) => {
+            return `${name} words: ${words}.<br>`
+        }).join('');
         let elem = document.getElementById('poolData');
-        elem.innerHTML = htmlData
+        elem.innerHTML = html
     },
 
     checkPoolStatisticsDisplayState() {
@@ -134,19 +140,23 @@ export default {
             let difficulty = (wordData.number/100) + '%';
             let word = wordData.wordName;
             return `<li data-wordName="${word}">
-<ul>
-<li>Word is "${word}"</li>
-<li>Difficulty is ${difficulty}</li>
-<li>Last check: ${lastCheck}</li>
-<li>Next check: ${nextCheck}</li>
-<li><button data-wordName="${word}">Delete word</button><br><br></li>
-</ul>
-</li>`
+                        <ul>
+                            <li>Word is "${word}"</li>
+                            <li>Difficulty is ${difficulty}</li>
+                            <li>Last check: ${lastCheck}</li>
+                            <li>Next check: ${nextCheck}</li>
+                            <li>
+                                <button data-wordName="${word}">Delete word</button>
+                                <br>
+                                <br>
+                            </li>
+                        </ul>
+                    </li>`
         }).join('');
         //todo: mb change click handler (it's pretty expensive with big number of words) or make pagination for pool
-        pool.map((wordData) => {
-            $(`button[data-wordName="${wordData.wordName}"]`).click(() => {
-                learnMachine.deleteWordFromPool(wordData.wordName)
+        pool.map(({wordName: name}) => {
+            $(`button[data-wordName="${name}"]`).click(() => {
+                learnMachine.deleteWordFromPool(name)
             })
         });
     },

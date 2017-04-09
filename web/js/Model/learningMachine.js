@@ -15,7 +15,6 @@ export default class  {
 
     setUserData (data) {
         this.userData = data;
-        /*localStorage.setItem('learnWords', JSON.stringify(data));*/
     }
 
     setAllDefaultWords(words) {
@@ -40,10 +39,8 @@ export default class  {
             return first;
         } else if (secondValid) {
             return second;
-        } else {
-            return false;
         }
-
+        return false;
     }
 
     updateStorageTime() {
@@ -60,26 +57,18 @@ export default class  {
         return `http://www.urbandictionary.com/define.php?term=${word}`
     }
 
-    getLearningPoolCopy() {
-        return this.userData.learningPool
-            .slice()
-            .map((wordData) => {
-                return Object.assign({}, wordData)
-            })
-    }
-
     getLearningPool(wordPart = '') {
         const regex = new RegExp(wordPart);
-        return this.getLearningPoolCopy()
-            .map((wordData) => {
-                wordData.wordName = this.getWordsNames([wordData.number])[0];
-                return wordData;
-            }).filter((wordData) => {
-                if (wordPart === '') {
-                    return true;
-                }
-                return wordData.wordName.match(regex) !== null
-            })
+        const numbers = this.userData.learningPool.map(({number}) => number);
+        const names = this.getWordsNames(numbers);
+        return this.userData.learningPool.map((wordData, index) => {
+            return Object.assign({}, wordData, {wordName: names[index]})
+        }).filter(wordData => {
+            if (wordPart === '') {
+                return true;
+            }
+            return wordData.wordName.match(regex) !== null
+        })
     }
 
     deleteWordFromPool(word) {
@@ -213,14 +202,32 @@ export default class  {
         return this.correctAnswers;
     }
 
+    normalizeString(answer) {
+        return answer.replace(/ё/ig, 'е')
+            .replace(/ /ig, '')
+            .toLowerCase();
+    }
+
+    checkAnswerInList(answer, list = []) {
+        answer = this.normalizeString(answer);
+        const regExp = new RegExp(answer, 'i');
+        return list.some((correctAnswer) => {
+            return this.normalizeString(correctAnswer) === answer;
+        })
+    }
+
     checkAnswer (answer) {
-        debugger;
+        let result = {
+            finished: false,
+            answerCorrect:false,
+            importantAnswersLeft: 0
+        };
         const number = this.userData.currentWord;
         const importantAnswers = this.findImportantAnswersUnchecked();
         const allAnswers = this.correctAnswers.map((answerObj) => (answerObj.answer));
         if (
-            (importantAnswers.length === 0 && allAnswers.includes(answer)) ||
-            (importantAnswers.length === 1 && importantAnswers.includes(answer))
+            (importantAnswers.length === 0 && this.checkAnswerInList(answer, allAnswers)) ||
+            (importantAnswers.length === 1 && this.checkAnswerInList(answer, importantAnswers))
         ) {
             //all finished - move to another word
             if (this.findWordInPool(this.userData.currentWord)) {
@@ -229,41 +236,27 @@ export default class  {
                 this.userData.knownWords.push(number);
             }
             this.setNextWordNumber();
-            return {finished: true}
+            result.finished = true;
+            result.answerCorrect = true;
+            return result;
         }
-        if (importantAnswers.length > 1 && importantAnswers.includes(answer)) {
+        if (importantAnswers.length > 1 && this.checkAnswerInList(answer, importantAnswers)) {
             //half success - you need to guess another word, which was left (correct answers will bu updated)
             this.correctAnswers.map((answerObj) => {
-                if (answerObj.answer === answerObj) {
+                if (answerObj.answer === answer) {
                     answerObj.isChecked = true;
                 }
                 return answerObj
             });
-            return {
-                finished: false,
-                importantAnswersLeft: answer.length-1
-            }
+            result.answerCorrect = true;
+            result.importantAnswersLeft = importantAnswers.length -1;
+            return result;
         }
-
-
-
-
-
-        //important Answers check
-
-
-
-        if (this.correctAnswers.includes(answer)) {
-            if (this.findWordInPool(this.userData.currentWord)) {
-                this.updateWordInPool(number, true);
-            } else {
-                this.userData.knownWords.push(number);
-            }
-            this.setNextWordNumber();
-            return true
-        } else {
-            return false
+        if (importantAnswers.length > 1 && !this.checkAnswerInList(answer, importantAnswers)) {
+            result.importantAnswersLeft = importantAnswers.length;
+            return result;
         }
+        return result;
     }
 
     findImportantAnswersUnchecked () {
@@ -277,12 +270,20 @@ export default class  {
         this.setNextWordNumber();
     }
 
-    addWordToPool () {
+    removeWordFromKnownWords(number) {
+        this.userData.knownWords = this.userData.knownWords.filter(wordNumber => {
+            return wordNumber !== number
+        })
+    }
+
+    addWordToPool (number = this.getCurrentWordNumber(), ultraNewSystem = true) {
+        this.removeWordFromKnownWords(number);
         const sixHours = 6*60*60*1000;
         const currentTime = new Date().getTime();
         const word = {
-            number: this.userData.currentWord,
+            number,
             successGuesses: 0,
+            ultraNewWordsGuesses: ultraNewSystem ? 3 : 0,
             lastGuessTime: currentTime,
             nextGuessTime: currentTime + sixHours
         };
@@ -290,29 +291,25 @@ export default class  {
     }
 
     calculateNumberOfWordsInPool (minGuesses, maxGuesses = Number.MAX_SAFE_INTEGER) {
-        const pool = this.userData.learningPool;
-        return pool.filter(wordData => {
-            if ((wordData.successGuesses<=maxGuesses) && (wordData.successGuesses>=minGuesses)) {
-                return wordData
-            }
+        return this.userData.learningPool.filter(({successGuesses: regular, ultraNewWordsGuesses: ultra}) => {
+            return regular<=maxGuesses && regular>=minGuesses && ultra === 0
         }).length
     }
 
     calculateReadyWordsInPool () {
-        const pool = this.userData.learningPool;
         const time = new Date().getTime();
-        return pool.filter(wordData => {
-            if (wordData.nextGuessTime<time) {
-                return wordData
-            }
-        }).length
+        return this.userData.learningPool.filter(({nextGuessTime}) => nextGuessTime<time).length
+    }
+
+    calculateUltraNewWordsNumber() {
+        return this.userData.learningPool.filter(({ultraNewWordsGuesses: times}) => times > 0).length
     }
 
     getKnownWordsCount() {
         return this.userData.knownWords.length
     }
 
-    updateWordInPool (wordNumber, successGuess) {
+    updateWordInPool (wordNumber, successGuess, addToUltraSystem = false) {
         //todo: refactor with moment
         let word = this.findWordInPool(wordNumber);
         const currentTime = new Date().getTime();
@@ -320,7 +317,19 @@ export default class  {
         const hour = 60*60*1000;
         const day = 24*hour;
         let delay = 6*hour;
+
+        if (word.ultraNewWordsGuesses > 0) {
+            //super new word - guesses depends on success
+            //no delay
+            if (successGuess) {
+                word.ultraNewWordsGuesses--;
+            }
+            return;
+        }
+
         if (successGuess) {
+            //not super new with correct guess
+            //regular delay
             word.successGuesses++;
             const currentAttempt = word.successGuesses;
             if (currentAttempt>=4 && currentAttempt<=6) {
@@ -336,56 +345,76 @@ export default class  {
             } else if (currentAttempt > 11) {
                 delay = 30*day
             }
+            word.nextGuessTime = currentTime+delay
+        } else if (addToUltraSystem && successGuess === false) {
+            //regular word, but now it will be ultra new word
+            //no delay
+            word.successGuesses = 0;
+            word.ultraNewWordsGuesses = 3;
         }
-        word.nextGuessTime = currentTime+delay
     }
 
     findFirstReadyWordFromPool () {
         const time = new Date().getTime();
-        let readyWords = this.userData.learningPool.filter(wordData => {
-            if (wordData.nextGuessTime<time) {
-                return wordData.number
-            }
-        });
-        if (readyWords.length>0) {
-            return readyWords[0]
+        const readyWords = this.userData.learningPool.filter(wordData => wordData.nextGuessTime < time);
+        if (readyWords.length === 0) return;
+
+        const firstOldWord = _.chain(readyWords)
+            .filter(({successGuesses: regular, ultraNewWordsGuesses: ultra}) => {
+                return regular > 0 || (regular === 0 && ultra === 0)
+            })
+            .orderBy(['successGuesses'], ['desc'])
+            .first()
+            .value();
+        if (firstOldWord) {
+            return firstOldWord
+        }
+
+        const firstUltraNewWord = _.chain(readyWords)
+            .filter(['successGuesses', 0])
+            .orderBy(['ultraNewWordsGuesses'], ['desc'])
+            .first()
+            .value();
+        if (firstUltraNewWord) {
+            return firstUltraNewWord
         }
     }
 
-    getCustomAnswersObject(number = this.getCurrentWordNumber()) {
+    getCustomAnswersObject(desiredNumber = this.getCurrentWordNumber()) {
         return this.getUserData()['additionalWordsTranslationList']
-            .find((wordData) => {
-                return wordData.number === number;
-            });
+            .find(({number}) => number === desiredNumber);
     }
 
     getCustomAnswers(number = this.getCurrentWordNumber()) {
         let customAnswerObject = this.getCustomAnswersObject(number);
-        if (!customAnswerObject) return [];
-        return customAnswerObject['translations'];
+        return !customAnswerObject ? [] : customAnswerObject['translations']
     }
 
-    updateCustomAnswers(answer) {
-        if (this.correctAnswers.find((answerObj) => (answerObj.answer === answer))) return;
-        let customAnswers = this.getCustomAnswers();
+    updateCustomAnswers(answer, wordNumber = this.getCurrentWordNumber()) {
+        //todo: is that condition necessary?
+        if (this.correctAnswers.find(({answer:correctAnswer}) => (correctAnswer === answer))) return;
+        let customAnswers = this.getCustomAnswers(wordNumber);
         customAnswers.push(answer);
         let customAnswersObject = this.getCustomAnswersObject();
         customAnswersObject['translations'] = customAnswers;
+        if (wordNumber !== this.getCurrentWordNumber()) return;
         this.addCustomTranslationToCorrectAnswers(answer);
     }
 
-    addCustomPureAnswer(answer) {
-        const answers = this.getCustomAnswers();
+    addCustomPureAnswer(answer, wordNumber = this.getCurrentWordNumber()) {
+        const answers = this.getCustomAnswers(wordNumber);
         if (answers.length === 0) {
             //add
             this.getUserData()['additionalWordsTranslationList'].push({
-                'number': this.getWordNumber(),
+                'number': wordNumber,
                 'translations': [answer]
             });
-            this.addCustomTranslationToCorrectAnswers(answer)
+            if (wordNumber === this.getCurrentWordNumber()) {
+                this.addCustomTranslationToCorrectAnswers(answer)
+            }
         } else {
             //update
-            this.updateCustomAnswers(answer)
+            this.updateCustomAnswers(answer, wordNumber)
         }
     }
 
@@ -455,6 +484,8 @@ export default class  {
     deleteCustomPureAnswer(translation) {
         let answers = this.getCustomAnswers();
         if (!answers.includes(translation)) return;
+        //if word is custom - you cannot delete last translation
+        if (this.isCustomWordSet(this.getCurrentWordName()) && answers.length === 1) return;
         answers = answers.filter((answer) => (answer !== translation));
         let customAnswersObject = this.getCustomAnswersObject();
         customAnswersObject['translations'] = answers;
@@ -470,7 +501,6 @@ export default class  {
     }
 
     setAnswers (wordName, defaultAnswers) {
-        //todo: model should not work with asynchronous code
         //todo: redo with extended translation and custom word
         //todo: huge problem here = default answer for predefined word, and custom answer only for current word
         //todo: problem with inaccessible word data (should be some error handling and time limit for request to server)
@@ -527,64 +557,44 @@ export default class  {
     }
 
     isCustomWordSet(word) {
-        //todo: doable too
         return this.getUserData()['additionalWordsList']
             .find((customWord) => {
-                return customWord['word'] === word
+                return customWord['name'] === word
             })
     }
 
     getLatestCustomWordNumber() {
-        //todo:doable, mb now just push words and get number normal (and not that weird 100000 value)
-        const list = this.getUserData()['additionalWordsList'];
+        let list = this.getUserData()['additionalWordsList'];
         if (list.length === 0) {
-            return 99999;
+            list = this.allWords;
         }
         return Math.max(...list.map((data) => (data.number)))
     }
 
-    addBrandNewCustomWord(word) {
-        if (this.isCustomWordSet(word)) return;
-        const currentNumber = this.getLatestCustomWordNumber();
+    addBrandNewCustomWord(name) {
+        //condition seems impossible
+        if (this.isCustomWordSet(name)) return;
+        const newWordNumber = this.getLatestCustomWordNumber()+1;
         this.getUserData()['additionalWordsList'].push({
-            word,
-            number: currentNumber+1
+            name,
+            number: newWordNumber
         });
-        //add to pool and return to previous word
-        this.userData.currentWord = (currentNumber);
-        this.addWordToPool();
-        this.userData.currentWord = (previousNumber);
-            //previous number is undefined?
     }
 
     addCustomWord(name, translation) {
         //find word in all words
         //todo: add here to super new learning list (till three success guesses)
-        let wordNumber;
-        const wordData = this.allWords.filter((wordObj, index) => {
-            if (wordObj.word === name) {
-                wordNumber = index;
-                return true;
-            }
-            return false;
-        });
-        if (wordData.length === 0) {
-            const currentNumber = this.userData.currentWord;
-            this.addBrandNewCustomWord(name);
-            this.addCustomPureAnswer(translation);
-            return;
-            //todo: put in learning pool too
+        let currentWordNumber = this.getCurrentWordNumber();
+        let customWord = this.allWords.find(wordObj => wordObj.name === name);
+        if (customWord) {
+            this.addWordToPool(customWord.number);
+            return `You successfully added this word to pool.`
         }
-        const number = wordData[0].number;
-        const learningPool = this.userData.learningPool.filter((learnedWord) => {
-            return learnedWord.number == wordNumber
-        });
-        //already learned
-        if (learningPool.length > 0) return;
-        const previousNumber = this.userData.currentWord;
-        this.userData.currentWord = wordNumber;
-        this.addWordToPool();
-        this.userData.currentWord = previousNumber;
+        this.addBrandNewCustomWord(name);
+        let customWordNumber = this.getLatestCustomWordNumber();
+        this.addCustomPureAnswer(translation, customWordNumber);
+        this.addWordToPool(customWordNumber);
+        return `You successfully added this custom word to pool and expanded all words.`
     }
 
 }

@@ -10,8 +10,8 @@ const moment = require('moment');
 
 class Saver extends DataManager{
 
-    constructor (localStorage, dbStorage) {
-        super();
+    constructor (localStorage, dbStorage, dev) {
+        super(dev);
         this.localeStorage = localStorage;
         this.dbStorage = dbStorage;
         this.localeStorageObj = false;
@@ -21,11 +21,23 @@ class Saver extends DataManager{
     saveData() {
         //todo: add db injections handling
         //todo: add user handling
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const now = moment().format('YYYY-MM-DD HH:mm:ss');
-            const queue = `INSERT INTO ${this.tableName} (storage, created, user_id) VALUES ('${this.localeStorage}','${now}', '2')`;
+            const queue = `INSERT INTO ${this.tableName} (storage, created, modified, user_id) VALUES ('${this.localeStorage}','${now}', '${now}', '2')`;
             let db = new Database();
-            resolve (db.runSimpleQuery(queue))
+            db.runSimpleQuery(queue)
+                .then(() => {
+                    resolve({
+                        readyToBackup: true,
+                        errMessage: false,
+                        data: {
+                            storage: this.localeStorage,
+                            userId: '2'
+                        }
+                    })
+                }, err => {
+                    reject(err)
+                })
         })
     }
 
@@ -35,7 +47,12 @@ class Saver extends DataManager{
             const now = moment().format('YYYY-MM-DD HH:mm:ss');
             const queue = `UPDATE ${this.tableName} SET storage='${this.localeStorage}', modified='${now}' WHERE storage='${this.dbStorage}'`;
             let db = new Database();
-            resolve(db.runSimpleQuery(queue));
+            db.runSimpleQuery(queue)
+                .then(() => {
+                    resolve({readyToBackup:false, errMessage:false})
+                }, err => {
+                    reject(err)
+                })
         })
     }
 

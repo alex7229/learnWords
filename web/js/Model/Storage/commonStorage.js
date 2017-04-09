@@ -10,7 +10,8 @@ exports.compress = (userData) => {
             lgt:utils.convertToUnixMinutes(wordData['lastGuessTime']),
             ngt:utils.convertToUnixMinutes(wordData['nextGuessTime']),
             n: wordData['number'],
-            sg: wordData['successGuesses']
+            sg: wordData['successGuesses'],
+            ug: wordData['ultraNewWordsGuesses']
         }
     });
     const storage = JSON.stringify(userData);
@@ -26,7 +27,8 @@ exports.decompress = (jsonUserData) => {
                 lastGuessTime: utils.convertToTimestampFromMinutes(wordData['lgt']),
                 nextGuessTime: utils.convertToTimestampFromMinutes(wordData['ngt']),
                 number: wordData['n'],
-                successGuesses: wordData['sg']
+                successGuesses: wordData['sg'],
+                ultraNewWordsGuesses: wordData['ug']
             }
         });
     } catch (err) {

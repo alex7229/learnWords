@@ -49,4 +49,21 @@ export default class {
             return previousWords.concat(currentWord)
         }, [])
     }
+
+
+    resolveAfter2Seconds(x) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve(x);
+            }, 2000);
+        });
+    }
+
+    async add1(x) {
+        var a = this.resolveAfter2Seconds(20);
+        var b = this.resolveAfter2Seconds(30);
+        let answer =  x + await a + await b;
+        console.log(answer);
+        return answer;
+    }
 }

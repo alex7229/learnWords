@@ -1,7 +1,7 @@
 /**
  * Created by uadn-gav on 2/27/17.
  */
-var mysql = require('mysql');
+const mysql = require('mysql');
 
 class Database {
     constructor() {
@@ -9,20 +9,12 @@ class Database {
     }
 
     connect() {
-        //todo: hide data in file (that is not in git)
-        //todo: change at home
         this.connection = mysql.createConnection({
-            'host': '10.38.1.200',
-            'user': 'cysend_v2',
-            'password': 'Cqgn0QG9RkRzHwxVDtiEUDR2h',
-            'database': 'cysend_v2'
-        });
-        /*this.connection = mysql.createConnection({
             'host': '127.0.0.1',
             'user': 'root',
             'password': 'basta',
             'database': 'learnwords'
-        });*/
+        });
         return new Promise ((resolve, reject) => {
             this.connection.connect((err) => {
                 if (err) {

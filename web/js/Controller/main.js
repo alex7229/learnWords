@@ -106,17 +106,20 @@ export default class {
         const name = this.learnMachineInstance.getCurrentWordName();
         let defaultTranslations = [];
         try {
-            var translationData = await getYandexTranslation(name);
+            const translationData = await getYandexTranslation(name);
             //todo: set error handling if there is word in AllWordsList but server returns 404 after some time
             const parse = new YandexParseModel(translationData);
             defaultTranslations = parse.findCorrectAnswers(parse.getData(translationData));
-        } finally  {}
+        } catch (err) {
+            defaultTranslations = [];
+        }
         try {
             this.learnMachineInstance.setAnswers(name, defaultTranslations);
             const wordInPool = this.learnMachineInstance.findWordInPool(number);
             if (wordInPool) {
-                learnMachineView.showWordStatistics(wordInPool)
+                learnMachineView.showWordStatistics(wordInPool, this.learnMachineInstance.isCustomWordSet(name))
             } else {
+                //todo: add handling here about custom word
                 learnMachineView.showWordStatistics(`Difficulty is ${(number/10000*100).toFixed(2)}%.<br>U see that word for first time. `)
             }
             learnMachineView.showQuestion(name);
@@ -135,7 +138,9 @@ export default class {
     startLearnWord () {
         const number = this.learnMachineInstance.getWordNumber();
         if (this.learnMachineInstance.findWordInPool(number)) {
-            this.learnMachineInstance.updateWordInPool(number, false)
+            //you don't know word that is already started to learn some time ago
+            // => it's time to use ultra new words learning system
+            this.learnMachineInstance.updateWordInPool(number, false, true)
         } else {
             this.learnMachineInstance.addWordToPool();
         }
@@ -149,17 +154,32 @@ export default class {
 
     tryToGuessWord() {
         const answer = document.getElementById('answerWord').value;
-        //check can return only success or false, but you should check is that all answers, what you need or not
-        if (this.learnMachineInstance.checkAnswer(answer)) {
+        const check = this.learnMachineInstance.checkAnswer(answer);
+        if (check.finished) {
             this.updateStorage();
             learnMachineView.clearInput();
             learnMachineView.clearTranslations();
             this.getQuestion();
             this.updatePoolStatistics();
-            learnMachineView.showNotification('Answer is correct')
-        } else {
-            learnMachineView.showNotification('Answer is incorrect')
+            learnMachineView.showNotification('Answer is correct. Proceed to next word');
+            return;
         }
+        if (check.importantAnswersLeft > 0 && check.answerCorrect === false) {
+            learnMachineView.showNotification(
+                `Answer was incorrect.
+                 You still have ${check.importantAnswersLeft} main answers left`
+            );
+            return;
+        }
+        if (check.importantAnswersLeft > 0 && check.answerCorrect === true) {
+            learnMachineView.clearInput();
+            learnMachineView.showNotification(
+                `Answer was correct.
+                 You have ${check.importantAnswersLeft} main answers left`
+            );
+            return;
+        }
+        learnMachineView.showNotification('Answer is incorrect. Try again');
     };
 
     skipWord () {
@@ -241,38 +261,44 @@ export default class {
         learnMachineView.toggleBlock('addCustomWord');
         let $newWord = $('#newWord');
         let $translation = $('#newWordTranslation');
-        this.learnMachineInstance.addCustomWord($newWord.val(), $translation.val());
+        const result = this.learnMachineInstance.addCustomWord($newWord.val(), $translation.val());
         $newWord.val('');
         $translation.val('');
+        $('#learningNotification').html(result);
+        this.updateStorage();
     };
 
     showUserPool () {
-        //todo: move all that data to view - it should make it html from array
-        //todo: make config and decrease copypasted code
-        const readyWordsCount = this.learnMachineInstance.calculateReadyWordsInPool();
-        const ultraNewWordsCount = this.learnMachineInstance.calculateNumberOfWordsInPool(0);
-        const newWordsCount = this.learnMachineInstance.calculateNumberOfWordsInPool(1, 3);
-        const mediumWordsCount = this.learnMachineInstance.calculateNumberOfWordsInPool(4, 6);
-        const oldWordsCount = this.learnMachineInstance.calculateNumberOfWordsInPool(7, 8);
-        const superOldWordsCount = this.learnMachineInstance.calculateNumberOfWordsInPool(9, 11);
-        const maxOldWordsCount = this.learnMachineInstance.calculateNumberOfWordsInPool(12);
-        const knownWordsCount = this.learnMachineInstance.getKnownWordsCount();
-        const data = `Ready words: ${readyWordsCount}.<br>
-                        Ultra new words: ${ultraNewWordsCount}.<br>
-                        New words: ${newWordsCount}.<br>
-                        Medium words: ${mediumWordsCount}.<br>
-                        Old words: ${oldWordsCount}.<br>
-                        Very old words: ${superOldWordsCount}.<br>
-                        Ancient words: ${maxOldWordsCount}.<br>
-                        All known words: ${knownWordsCount}`;
-        learnMachineView.showPoolStatistics(data);
+        let wordsData = [
+            ['New', [0,3]],
+            ['Medium', [4,6]],
+            ['Old', [7,8]],
+            ['Very old', [9,11]],
+            ['Ancient', [12,12]]
+        ].map(([name, [min, max, ultraNew]]) => {
+            return {
+                name,
+                words: this.learnMachineInstance.calculateNumberOfWordsInPool(min, max, ultraNew)
+            }
+        });
+        wordsData.unshift({
+            name: 'Ready',
+            words: this.learnMachineInstance.calculateReadyWordsInPool()
+        }, {
+            name: 'Ultra new',
+            words: this.learnMachineInstance.calculateUltraNewWordsNumber()
+        });
+        wordsData.push({
+            name: 'All known',
+            words: this.learnMachineInstance.getKnownWordsCount()
+        });
+        learnMachineView.showPoolStatistics(wordsData);
     };
 
     showLearningPoolFull() {
         const pool = this.learnMachineInstance.getLearningPool();
         learnMachineView.toggleBlock('fullLearningPool', 'block', true);
         learnMachineView.showFullLearningPool(pool, this);
-
     };
 
     showLearningPoolFiltered() {
@@ -355,14 +381,14 @@ export default class {
 
 
 
-    listenKeyboardButtons () {
+    turnEventKeyListener () {
         $(document).keydown((keyEvent) => {
             let elementId = keyEvent.target.id;
             if (elementId === 'poolWordFilter') {
                 this.showLearningPoolFiltered();
                 return;
             }
-            if (keyEvent.keyCode ==13) {
+            if (keyEvent.keyCode === 13) {
                 switch (elementId) {
                     case 'answerWord': {
                         this.tryToGuessWord();
@@ -383,8 +409,8 @@ export default class {
                     }
                 }
             }
-        })
-    };
+        });
+    }
 
     listenButtons () {
         document.getElementById("startLearnWord").onclick = this.startLearnWord.bind(this);
@@ -394,14 +420,9 @@ export default class {
         document.getElementById('urbanDictionary').onclick = this.moveToUrban.bind(this);
         document.getElementById('showCustomWordInput').onclick = this.showCustomWord.bind(this);
         document.getElementById('showFullLearningPool').onclick = this.showLearningPoolFull.bind(this);
-        document.getElementById('addWord').onclick = this.addCustomWord.bind(this);
         $('.hidePopup').click(() => (this.hidePopups()));
-   /*     document.getElementById('insertNumber').onclick = this.learnMachineInstance.setNextWordNumberStraight.bind(this.learnMachineInstance);*/
-        document.getElementById('answerWord').onkeydown = this.listenKeyboardButtons.bind(this);
-        document.getElementById('newWord').onkeydown = this.listenKeyboardButtons.bind(this);
-        document.getElementById('poolWordFilter').onkeyup = this.listenKeyboardButtons.bind(this);
         document.getElementById('fullReset').onclick = this.fullReset.bind(this);
         document.getElementById('updateOptions').onclick = this.updateUserOptions.bind(this);
-       /* document.getElementById('calculateUnusedWords').onclick = this.learnMachineInstance.setUnusedWords.bind(this.learnMachineInstance);*/
+        this.turnEventKeyListener();
     }
 }

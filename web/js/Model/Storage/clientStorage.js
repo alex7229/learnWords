@@ -36,7 +36,6 @@ export default  {
         return false;
     },
     saveSession (userData) {
-        //todo: validation?
         if (!validators.storage(userData)) {
             throw new Error('user data for save is invalid')
         }

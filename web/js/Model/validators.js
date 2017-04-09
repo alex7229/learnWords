@@ -26,14 +26,15 @@ exports.storage = (storage) => {
 
 function validateLearningPool(pool) {
     return pool.every(dataWord => {
-        if (!utils.checkPropertiesInObject(dataWord, ['lastGuessTime', 'nextGuessTime', 'number', 'successGuesses'])) {
+        if (!utils.checkPropertiesInObject(dataWord, ['lastGuessTime', 'nextGuessTime', 'number', 'successGuesses', 'ultraNewWordsGuesses'])) {
             return false;
         }
         return [
             dataWord['lastGuessTime'],
             dataWord['nextGuessTime'],
             dataWord['number'],
-            dataWord['successGuesses']
+            dataWord['successGuesses'],
+            dataWord['ultraNewWordsGuesses']
         ].every(number => {
             return Number.isInteger(number)
         });
@@ -55,9 +56,11 @@ function validateKnownWords(words) {
 }
 
 function validateWordsList(list) {
+    //todo: validate
     return true;
 }
 
 function validateWordsTranslationList(list) {
+    //todo:validate
     return true;
 }
