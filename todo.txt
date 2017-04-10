@@ -33,7 +33,7 @@ MEDIUM FIXES
 13) add statistic block (how many words have you learned for last month per day in average - and draw graphs; mb some other statistic)
 14) when you add custom word - you can choose  from the default words (name, number - so you can see the difficulty)  and if it'not on the list - create custom word
     if it's custom word - you should specify translation
-15) clear package.json (there is a lot o modules, which aren't necessary)
+15) clear package.json (there is a lot of modules, which aren't necessary)
 LOW PRIORITY FIXES
 1) add pagination to learning pool
 2) when show learning pool list - make filter input active (and perform it, if it was set before)
