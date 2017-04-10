@@ -1,0 +1,64 @@
+URGENT FIXES
+0) for expanding translation (important words) - make it with groups, where you can drag and drop stuff.
+1) ultra new words problem
+    => if word is already ultra new and you don't know it - you cannot push it to the end (it will appear right away)
+    => if you don't know word, it doesn't change ultraNewWordGuesses to 3
+    => when guesses become 0 - word become regular and you need to answer it immediately (seems useless)
+8) make converter from old storage format to new one (make sure that words in pool aren't in known list - delete them from known)
+    check work with little storage (10 words in learning). Make sure updated option is fired in correct time (when there are no words left)
+10) if problems with connection occur - localStorage will break (probably that stuff happened with masturbation word)
+    if you set next word number - check if you can get translation for it (otherwise it will be like in screenshot)
+    so if there is no translation - don't update the storage (mb even don't set number for next word - throw huge error - some connection problem occured)
+11) some words are blocked when downloading (for example peel, mb another with 'add content'). Check it and ask to disable addblocker.
+MEDIUM FIXES
+
+0) make all stuff on backend - node.js is fine. On frontent should only be "controller", powered by react.
+    debugable node.js is very important. 
+    You can divide on parts on backend too (not huge model). 
+    Before it make auth with react.
+0) rewrite all stuff to async/await and es6 modules (if it's make sense). Use babel for server (not only for web root - for server try to convert only your own files and not all files).
+        Make node server debugable.
+0.25) Important answers:  implement groups - so you would need to answer all groups -
+        -> and if group has several translation  - it's enough to check one of them
+1) backup storage data to onedrive cloud (or even send by email)
+5) make possible to get list of saved user storages (you can choose which storage do you want to use, if last one from server for some reason is corrupted)
+7) remake all shown dates with fancy moment.js (for example - last check was 12 hours ago or 12 days ago, don't use boring date)
+8) too many yandex translations for some words cannot fit on the screen (make scroll possible)
+9) add possibility to delete words from learning pool via button `I don't want to learn that word`, but with prompt,
+    so you will not delete word from pool by accident ('Do you really want to delete word from pool?')
+11) when you click on some buttons, e.g. "I don't know word", focus should be left on input field.
+    mb same with clicking on document.
+12) allWords should be without number (just plain array with words - you can save it in localstorage - it's only 300 KB)
+    words in pool should not contain last guess time (it can be calculated automatically)
+13) add statistic block (how many words have you learned for last month per day in average - and draw graphs; mb some other statistic)
+14) when you add custom word - you can choose  from the default words (name, number - so you can see the difficulty)  and if it'not on the list - create custom word
+    if it's custom word - you should specify translation
+
+LOW PRIORITY FIXES
+1) add pagination to learning pool
+2) when show learning pool list - make filter input active (and perform it, if it was set before)
+3) fix controller - there are methods with a lot of view lines (move them to view files)
+   learnMachine model inside controller is not very good case (it's not even a controller)
+4) revise all words from the pool (jump, hop, skip, leap, bound - all jumps, but they are different)
+5) if you click 'Show translations'  - word will be downloaded again. Fix it.
+6) when you click "I don't want to learn that word" - list of all know words is not updated.
+7) implement adding of new custom translations and marking important translations to every word (not only current word)
+8) mb add some other keyboard features (so you won't need to move your hand to mouse every time you don't know the word)
+    "I don't know word" button make with keyboard shortcuts (mb even double buttons
+    shift+enter or something like that)
+
+POSSIBLE FEATURES
+1) add google images of current word
+2) add again urban dictionary and google images in iframe (download data via browser with parsed css)
+3) add user management (everyone can use my application) - mb with react
+4) add reactjs + redux ?
+5) add aggression slider for saving (if you have bad connection - don't send data to server every time  - mb once in day)
+    it requires manual save of data (if you want to use application from different devices)
+6) make opposite direction of guessing (question in russian (with important words highlighted - when multiple definition of word ) and you should type answer in english)
+7) mb make something for mobile - when you don't need to type the answer but choose translation (or even better - the definition of word)
+       you can get definition from all words or from your pool
+8) create custom phrases (idioms or words with prepositions - 'take off'), where you need only to choose meaning (and not type manually the answer - it would be frustrating)
+    number of choices would be 5...10
+9) create learning system for second and third forms of irregular verbs
+
+

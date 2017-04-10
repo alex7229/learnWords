@@ -1,0 +1,50 @@
+{
+  "name": "learnwords",
+  "version": "1.0.0",
+  "description": "Tiny application for extensive learn of top 10k most common english words.",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tup1tsa/learnWords.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tup1tsa/learnWords/issues"
+  },
+  "homepage": "https://github.com/tup1tsa/learnWords#readme",
+  "dependencies": {
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
+    "babel-preset-es2017": "^6.22.0",
+    "babel-preset-latest": "^6.22.0",
+    "babel-preset-stage-1": "^6.22.0",
+    "babelify": "^7.3.0",
+    "body-parser": "^1.16.1",
+    "browserify": "^14.0.0",
+    "compression": "^1.6.2",
+    "express": "^4.14.1",
+    "forever-monitor": "^1.7.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-livereload": "^3.8.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^2.4.1",
+    "gulp-uglify": "^2.0.1",
+    "htmlparser": "^1.7.7",
+    "lodash": "^4.17.4",
+    "lzma": "^2.3.2",
+    "moment": "^2.17.1",
+    "mysql": "^2.13.0",
+    "request": "^2.80.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "devDependencies": {
+    "babel-polyfill": "^6.22.0",
+    "babel-preset-env": "^1.3.2",
+    "babel-preset-es2017": "^6.22.0"
+  }
+}

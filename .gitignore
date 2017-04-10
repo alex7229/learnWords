@@ -1,0 +1,6 @@
+.idea/*
+web/js/app.compiled.js
+web/js/app.compiled.js.map
+node_modules
+**/yandexTranslations
+**/*compiled*
