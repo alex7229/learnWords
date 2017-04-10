@@ -1,4 +1,5 @@
 URGENT FIXES
+0) for expanding translation (important words) - make it with groups, where you can drag and drop stuff.
 1) ultra new words problem
     => if word is already ultra new and you don't know it - you cannot push it to the end (it will appear right away)
     => if you don't know word, it doesn't change ultraNewWordGuesses to 3
@@ -10,6 +11,10 @@ URGENT FIXES
     so if there is no translation - don't update the storage (mb even don't set number for next word - throw huge error - some connection problem occured)
 11) some words are blocked when downloading (for example peel, mb another with 'add content'). Check it and ask to disable addblocker.
 MEDIUM FIXES
+0) make all stuff on backend - node.js is fine. On frontent should only be "controller", powered by react.
+    debugable node.js is very important. 
+    You can divide on parts on backend too (not huge model). 
+    Before it make auth with react.
 0) rewrite all stuff to async/await and es6 modules (if it's make sense). Use babel for server (not only for web root - for server try to convert only your own files and not all files).
         Make node server debugable.
 0.25) Important answers:  implement groups - so you would need to answer all groups -
