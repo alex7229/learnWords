@@ -10,6 +10,9 @@ URGENT FIXES
     if you set next word number - check if you can get translation for it (otherwise it will be like in screenshot)
     so if there is no translation - don't update the storage (mb even don't set number for next word - throw huge error - some connection problem occured)
 11) some words are blocked when downloading (for example peel, mb another with 'add content'). Check it and ask to disable addblocker.
+12) to push some words to the end of pool - just add another flag. Queue for example -> assign it to pool length (only of ready words).
+    When you proceed to next word - decrease queue by one of every word (pool loop).
+    Think about new words adding to the pool manually in that moment and words, that weren't ready in the beginning and are ready later.
 MEDIUM FIXES
 
 0) make all stuff on backend - node.js is fine. On frontent should only be "controller", powered by react.
@@ -34,6 +37,8 @@ MEDIUM FIXES
 14) when you add custom word - you can choose  from the default words (name, number - so you can see the difficulty)  and if it'not on the list - create custom word
     if it's custom word - you should specify translation
 15) clear package.json (there is a lot of modules, which aren't necessary)
+16) when you delete ford from pool - there is no update of pool list
+
 LOW PRIORITY FIXES
 1) add pagination to learning pool
 2) when show learning pool list - make filter input active (and perform it, if it was set before)

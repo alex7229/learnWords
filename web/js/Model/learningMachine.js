@@ -1,8 +1,6 @@
 /**
  * Created by tup1tsa on 11.08.2016.
  */
-import {getYandexTranslation} from '../AjaxRequests'
-import YandexParseModel from './Parse/yandex'
 const utils = require('../utils');
 const validators  = require('./validators');
 
@@ -125,17 +123,6 @@ export default class  {
             }
             throw new Error(`for word with number ${number} name was not found`)
         });
-    }
-
-
-    sortUserPool(type) {
-        //default - by successGuesses and then by super new words somehow
-        if (type === 'number') {
-            this.userData.learningPool = _.sortBy(this.userData.learningPool, ['number']);
-        } else {
-            this.userData.learningPool = _.sortBy(this.userData.learningPool, ['successGuesses'])
-                .reverse();
-        }
     }
 
     setNextWordNumber () {
