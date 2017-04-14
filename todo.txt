@@ -13,6 +13,7 @@ URGENT FIXES
 12) to push some words to the end of pool - just add another flag. Queue for example -> assign it to pool length (only of ready words).
     When you proceed to next word - decrease queue by one of every word (pool loop).
     Think about new words adding to the pool manually in that moment and words, that weren't ready in the beginning and are ready later.
+13) problem with showing all data from pool (numbers are not sorted, names are sorted -> names are not correlated with numbers)
 MEDIUM FIXES
 
 0) make all stuff on backend - node.js is fine. On frontent should only be "controller", powered by react.
