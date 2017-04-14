@@ -14,6 +14,8 @@ URGENT FIXES
     When you proceed to next word - decrease queue by one of every word (pool loop).
     Think about new words adding to the pool manually in that moment and words, that weren't ready in the beginning and are ready later.
 13) problem with showing all data from pool (numbers are not sorted, names are sorted -> names are not correlated with numbers)
+14) problem with additionalWordsList - whenever you update all list - you concatenate multiple times (additional words can appear multiple times then)
+15) problem with word grit - seems like it in ultranewWords and learning pool
 MEDIUM FIXES
 
 0) make all stuff on backend - node.js is fine. On frontent should only be "controller", powered by react.
