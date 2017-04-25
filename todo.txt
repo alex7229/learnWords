@@ -37,6 +37,9 @@ MEDIUM FIXES
 12) allWords should be without number (just plain array with words - you can save it in localstorage - it's only 300 KB)
     words in pool should not contain last guess time (it can be calculated automatically)
 13) add statistic block (how many words have you learned for last month per day in average - and draw graphs; mb some other statistic)
+    check the session length => for example, you answer word in 9.00, next answer 9.01 and so on till 9.25. 
+    Session length is 25  minutes. If difference between words is more than 10 minutes - that's different sessions.
+    So you can track your time, which you did spend.
 14) when you add custom word - you can choose  from the default words (name, number - so you can see the difficulty)  and if it'not on the list - create custom word
     if it's custom word - you should specify translation
 15) clear package.json (there is a lot of modules, which aren't necessary)
