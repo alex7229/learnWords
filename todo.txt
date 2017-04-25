@@ -4,6 +4,9 @@ URGENT FIXES
     => if word is already ultra new and you don't know it - you cannot push it to the end (it will appear right away)
     => if you don't know word, it doesn't change ultraNewWordGuesses to 3
     => when guesses become 0 - word become regular and you need to answer it immediately (seems useless)
+    => for sorting it would be better to create pool with those words (ultra new) and use shift and push.
+        and get first one word from that pool 
+        (mb it's better to get number or name of word and then explicitly set the number of current learning word).
 8) make converter from old storage format to new one (make sure that words in pool aren't in known list - delete them from known)
     check work with little storage (10 words in learning). Make sure updated option is fired in correct time (when there are no words left)
 10) if problems with connection occur - localStorage will break (probably that stuff happened with masturbation word)
