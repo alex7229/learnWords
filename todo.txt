@@ -40,6 +40,9 @@ MEDIUM FIXES
     check the session length => for example, you answer word in 9.00, next answer 9.01 and so on till 9.25. 
     Session length is 25  minutes. If difference between words is more than 10 minutes - that's different sessions.
     So you can track your time, which you did spend.
+    How many words did you start learning? (save all data by session  - but statistic should be by days, months, etc)
+    statistic calculation should be done by server (mb if you want to save new data  - 6 hours difference - check the statistics)
+    it's possible to evaluate statistics from the data from db.
 14) when you add custom word - you can choose  from the default words (name, number - so you can see the difficulty)  and if it'not on the list - create custom word
     if it's custom word - you should specify translation
 15) clear package.json (there is a lot of modules, which aren't necessary)
